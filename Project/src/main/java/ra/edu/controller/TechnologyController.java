@@ -12,65 +12,59 @@ import javax.validation.Valid;
 import java.util.List;
 
 @Controller
-@RequestMapping("/technology")
+@RequestMapping("admin/technology")
 public class TechnologyController {
 
     @Autowired
     private TechnologyService technologyService;
 
-    @GetMapping
+    @GetMapping("")
     public String listTechnologies(@RequestParam(defaultValue = "0") int page,
                                    @RequestParam(defaultValue = "5") int size,
                                    Model model) {
-        List<TechnologyDTO> technologies = technologyService.findAll(page, size);
+        List<TechnologyDTO> technologies = technologyService.findAllActive(page, size);
         long totalItems = technologyService.getTotalItems();
         int totalPages = (int) Math.ceil((double) totalItems / size);
+
         model.addAttribute("technologies", technologies);
+        model.addAttribute("technology", new TechnologyDTO()); // dùng cho modal thêm
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("totalItems", totalItems);
         model.addAttribute("pageSize", size);
-        return "technology/list";
+        return "/admin/technology"; // Trang chính có modal
     }
 
-    @GetMapping("/add")
-    public String showAddForm(Model model) {
-        model.addAttribute("technology", new TechnologyDTO());
-        return "technology/form";
-    }
-
-    @PostMapping("/add")
-    public String addTechnology(@Valid @ModelAttribute("technology") TechnologyDTO technologyDTO,
-                                BindingResult result, Model model) {
+    @PostMapping("/save")
+    public String saveTechnology(@Valid @ModelAttribute("technology") TechnologyDTO technologyDTO,
+                                 BindingResult result,
+                                 Model model) {
         if (result.hasErrors()) {
-            return "technology/form";
+            List<TechnologyDTO> technologies = technologyService.findAll(0, 5);
+            long totalItems = technologyService.getTotalItems();
+            int totalPages = (int) Math.ceil((double) totalItems / 5);
+
+            model.addAttribute("technologies", technologies);
+            model.addAttribute("currentPage", 0);
+            model.addAttribute("totalPages", totalPages);
+            model.addAttribute("totalItems", totalItems);
+            model.addAttribute("pageSize", 5);
+            return "redirect:/admin/technology";
         }
+
         technologyService.save(technologyDTO);
-        return "redirect:/technology";
+        return "redirect:/admin/technology";
     }
 
-    @GetMapping("/edit/{id}")
-    public String showEditForm(@PathVariable("id") int id, Model model) {
-        TechnologyDTO technology = technologyService.findById(id);
-        model.addAttribute("technology", technology);
-        return "technology/form";
-    }
-
-    @PostMapping("/edit/{id}")
-    public String updateTechnology(@PathVariable("id") int id,
-                                   @Valid @ModelAttribute("technology") TechnologyDTO technologyDTO,
-                                   BindingResult result, Model model) {
-        if (result.hasErrors()) {
-            return "technology/form";
-        }
-        technologyDTO.setId(id);
-        technologyService.save(technologyDTO);
-        return "redirect:/technology";
+    @GetMapping("/find/{id}")
+    @ResponseBody
+    public TechnologyDTO findTechnologyById(@PathVariable("id") int id) {
+        return technologyService.findById(id); // Dùng để nạp dữ liệu lên modal sửa (AJAX)
     }
 
     @GetMapping("/delete/{id}")
     public String deleteTechnology(@PathVariable("id") int id) {
         technologyService.delete(id);
-        return "redirect:/technology";
+        return "redirect:/admin/technology";
     }
 }

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>Dashboard</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="flex">
+
+        <!-- Gọi fragment tên "sidebar" từ file sidebar.html -->
+        <div th:replace="sidebar :: sidebar"></div>
+
+<!--        &lt;!&ndash; Nội dung chính &ndash;&gt;-->
+        <div class="flex-1 p-6">
+            <h1 class="text-2xl font-bold text-gray-700">Trang dashboard</h1>
+        </div>
+
+    </body>
+</html>

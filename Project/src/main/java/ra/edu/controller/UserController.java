@@ -10,11 +10,14 @@ import ra.edu.dto.RegistrationDTO;
 import ra.edu.dto.UserDTO;
 import ra.edu.dto.CandidateDTO;
 import ra.edu.entity.user.User;
+import ra.edu.entity.user.UserRole;
 import ra.edu.service.UserService;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.List;
+import java.util.Objects;
 
 @Controller
 public class UserController {
@@ -23,7 +26,13 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/login")
-    public String showLogin(Model model) {
+    public String showLogin(Model model, HttpServletRequest request) {
+        String role =userService.getCurrentUserRole(request);
+        if (role.equals("admin")) {
+            return "redirect:/admin";
+        }else if (role.equals("user")) {
+            return "redirect:/user";
+        }
         model.addAttribute("userDTO", new UserDTO());
         return "login";
     }

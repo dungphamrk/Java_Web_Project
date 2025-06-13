@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>Dashboard</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body>
+        <div class="container mx-auto px-6 py-6">
+            <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center text-xl font-semibold">
+                        <img th:src="@{../image/technology.svg}">
+                        &nbsp; Technology
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <form th:action="@{/admin/technology}" method="get" class="relative">
+                            <input
+                                    type="text"
+                                    name="keyword"
+                                    placeholder="Tìm kiếm..."
+                                    class="pl-4 pr-10 py-2 border border-gray-300 rounded-md w-72 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                            />
+                            <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                🔍
+                            </button>
+                        </form>
+                        <button onclick="openModal('addTechModal')" class="bg-red-600 text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-red-700">
+                            Thêm Công nghệ
+                        </button>
+
+                        <!-- Modal Thêm -->
+                        <div id="addTechModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 hidden">
+                            <div class="bg-white p-6 rounded-md shadow-md w-[30rem]">
+                                <div class="flex justify-between mb-4">
+                                    <h2 class="text-xl font-semibold">Thêm Công nghệ</h2>
+                                    <button onclick="closeModal('addTechModal')">✖</button>
+                                </div>
+                                <form th:action="@{/admin/technology/save}" method="post">
+                                    <label class="block text-sm font-medium mb-1">Tên công nghệ <span class="text-red-500">*</span></label>
+                                    <input type="text" name="name" required class="w-full border rounded px-3 py-2 mb-4">
+                                    <div class="flex justify-end gap-2">
+                                        <button type="button" onclick="closeModal('addTechModal')" class="px-4 py-2 border rounded">Hủy</button>
+                                        <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Lưu</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Edit -->
+            <div th:each="tech : ${technologies}">
+                <div th:id="'editModal-' + ${tech.id}" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center hidden">
+                    <div class="bg-white p-6 rounded-md shadow-md w-[30rem]">
+                        <div class="flex justify-between mb-4">
+                            <h2 class="text-xl font-semibold">Chỉnh sửa Công nghệ</h2>
+                            <button th:onclick="'closeModal(\'editModal-' + ${tech.id} + '\')'">✖</button>
+                        </div>
+                        <form th:action="@{/admin/technology/save}" method="post">
+                            <input type="hidden" name="id" th:value="${tech.id}">
+                            <label class="block text-sm font-medium mb-1">Tên công nghệ</label>
+                            <input type="text" name="name" th:value="${tech.name}" required class="w-full border rounded px-3 py-2 mb-4">
+                            <div class="flex justify-end gap-2">
+                                <button type="button" th:onclick="'closeModal(\'editModal-' + ${tech.id} + '\')'" class="px-4 py-2 border rounded">Hủy</button>
+                                <button type="submit" class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700">Lưu</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danh sách -->
+            <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                <table class="min-w-full text-sm text-left">
+                    <thead class="bg-gray-100 text-gray-600 font-semibold">
+                        <tr>
+                            <th class="px-6 py-4">STT</th>
+                            <th class="px-6 py-4">Tên Công Nghệ</th>
+                            <th colspan="2" class="px-6 py-4">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100" th:each="tech, iterStat : ${technologies}">
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4" th:text="${iterStat.index + 1}"></td>
+                            <td class="px-6 py-4" th:text="${tech.name}"></td>
+                            <td class="px-6 py-4">
+                                <div class="flex gap-2">
+                                    <a href="javascript:void(0);" th:onclick="'openModal(\'editModal-' + ${tech.id} + '\')'" class="text-yellow-600 hover:underline">
+                                        ✏️
+                                    </a>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex gap-2">
+                                    <a href="javascript:void(0);" th:onclick="'confirmDelete(' + ${tech.id} + ')'" class="text-red-600 hover:underline">
+                                        🗑️
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            function openModal(id) {
+                document.getElementById(id).classList.remove("hidden");
+            }
+
+            function closeModal(id) {
+                document.getElementById(id).classList.add("hidden");
+            }
+
+            function confirmDelete(id) {
+                Swal.fire({
+                    title: 'Bạn có chắc chắn?',
+                    text: "Bạn sẽ không thể hoàn tác thao tác này!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonText: 'Hủy',
+                    confirmButtonText: 'Xóa'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = `/admin/technology/delete/${id}`;
+                    }
+                });
+            }
+        </script>
+    </body>
+</html>

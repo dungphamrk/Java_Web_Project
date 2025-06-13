@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Register</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <div th:fragment="sidebar">
+        <div class="w-64 h-screen bg-white shadow-lg flex flex-col justify-between">
+            <!-- Top section -->
+            <div>
+                <!-- Logo & Title -->
+                <div class="flex items-center gap-2 px-6 py-4 border-b">
+                    <img th:src="@{../image/logo.svg}" alt="logo">
+                    <h1 class="text-lg font-semibold text-red-700">My Compnay</h1>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="mt-4">
+                    <ul class="space-y-2 px-4">
+                        <li>
+                            <a href="#" class="flex items-center px-3 py-2 rounded bg-red-100 text-red-700 font-medium">
+                                <img th:src="@{../image/dashboard.svg}">
+                                &nbsp; Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center px-3 py-2 rounded hover:bg-gray-100 text-gray-700">
+                                <img th:src="@{../image/candidate.svg}">
+                                &nbsp; Candidate
+                            </a>
+                        </li>
+                        <li>
+                            <a href="admin/technology" class="flex items-center px-3 py-2 rounded hover:bg-gray-100 text-gray-700">
+                                <img th:src="@{../image/technology.svg}">
+                                &nbsp; Technology
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center px-3 py-2 rounded hover:bg-gray-100 text-gray-700">
+                                <img th:src="@{../image/recruitment.svg}">
+                                &nbsp; Recruitment Position
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center px-3 py-2 rounded hover:bg-gray-100 text-gray-700">
+                                <img th:src="@{../image/application.svg}">
+                                &nbsp; Application
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Bottom section -->
+            <div class="px-4 pb-6">
+                <div class="border-t pt-4">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <img src="https://i.pravatar.cc/40?img=1" alt="Profile" class="w-10 h-10 rounded-full"/>
+                        <div>
+                            <p class="text-sm font-medium text-gray-800">Jenny Wilson</p>
+                            <p class="text-sm text-gray-500">jen.wilson@example.com</p>
+                        </div>
+                    </div>
+                    <button class="flex items-center w-full px-3 py-2 text-sm text-left text-gray-700 rounded hover:bg-gray-100">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M16 13v-2H7V8l-5 4 5 4v-3h9z"/>
+                        </svg>
+                        Log out
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</html>
+
+

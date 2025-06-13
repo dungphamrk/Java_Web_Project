@@ -30,7 +30,7 @@ public class CandidateDTO {
     private String phone;
 
     @Min(value = 0, message = "Kinh nghiệm không được âm")
-    private int experience;
+    private Integer experience;
 
     @NotNull(message = "Giới tính không được để trống")
     private Gender gender;
