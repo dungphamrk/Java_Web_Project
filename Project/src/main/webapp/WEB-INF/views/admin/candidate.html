@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>Candidate Dashboard</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://kit.fontawesome.com/a1fe2ce90b.js" crossorigin="anonymous"></script>
+    </head>
+    <body class="flex">
+        <div th:replace="sidebar :: sidebar"></div>
+
+        <div class="container mx-auto px-6 py-6">
+            <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center text-xl font-semibold">
+                        <img th:src="@{../image/candidate.svg}" class="w-6 h-6"/>
+                        &nbsp; Ứng viên
+                    </div>
+                    <div class="flex items-center space-x-4">
+
+                        <form th:action="@{/admin/candidate}" method="get" class="relative">
+                            <select name="technology" th:value="${technology}"
+                                    class="border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700">
+                                <option value="">Technology</option>
+                                <option th:each="tech : ${technologies}"
+                                        th:value="${tech.name}"
+                                        th:text="${tech.name}"
+                                        th:selected="${tech.name == technology}">
+                                </option>
+                            </select>
+
+                            <select name="gender" th:value="${gender}"
+                                    class="border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700">
+                                <option value="">Gender</option>
+                                <option value="MALE">Nam</option>
+                                <option value="FEMALE">Nữ</option>
+                                <option value="OTHER">Khác</option>
+                            </select>
+
+                            <select name="age" th:value="${age}"
+                                    class="border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700">
+                                <option value="">Age</option>
+                                <option value="18-24">18-24</option>
+                                <option value="25-30">25-30</option>
+                                <option value="31-40">31-40</option>
+                                <option value="41+">41+</option>
+                            </select>
+
+                            <select name="experience" th:value="${experience}"
+                                    class="border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700">
+                                <option value="">Experience</option>
+                                <option value="0-1">0-1 năm</option>
+                                <option value="2-3">2-3 năm</option>
+                                <option value="4-5">4-5 năm</option>
+                                <option value="5+">Trên 5 năm</option>
+                            </select>
+                            <input type="text" name="keyword" th:value="${keyword}" placeholder="Tìm kiếm..."
+                                   class="pl-4 pr-10 py-2 border border-gray-300 rounded-md w-72 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"/>
+                            <button type="submit"
+                                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 bg-600-blue">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thông báo lỗi -->
+            <div th:if="${errorMessage}" class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                <p th:text="${errorMessage}"></p>
+            </div>
+
+
+            <!-- Danh sách ứng viên -->
+            <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                <table class="min-w-full text-sm text-left">
+                    <thead class="bg-gray-100 text-gray-600 font-semibold">
+                        <tr>
+                            <th class="px-6 py-4">STT</th>
+                            <th class="px-6 py-4">Name</th>
+                            <th class="px-6 py-4">Email</th>
+                            <th class="px-6 py-4">Technology</th>
+                            <th class="px-6 py-4">Phone</th>
+                            <th class="px-6 py-4">Experience</th>
+                            <th class="px-6 py-4">Gender</th>
+                            <th class="px-6 py-4">Status</th>
+                            <th colspan="2" class="px-6 py-4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100" th:each="candidate, iter : ${candidates}">
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4" th:text="${iter.index + 1}"></td>
+                            <td class="px-6 py-4" th:text="${candidate.name}"></td>
+                            <td class="px-6 py-4" th:text="${candidate.email}"></td>
+                            <td class="px-6 py-4">
+                                <div class="flex gap-2 flex-wrap">
+                                    <span th:each="tech : ${candidate.technologyList}"
+                                          th:text="${tech.name}"
+                                          class="px-3 py-1 rounded-xl border bg-yellow-400 font-semibold">
+                                    </span>
+                                </div>
+                            </td>
+
+                            <td class="px-6 py-4" th:text="${candidate.phone}"></td>
+                            <td class="px-6 py-4" th:text="${candidate.experience}"></td>
+                            <td class="px-6 py-4" th:text="${candidate.gender}"></td>
+                            <td class="px-6 py-4">
+                                <span th:classappend="${candidate.user.status == T(ra.edu.entity.user.Status).ACTIVE} ?
+                                        'bg-green-100 text-green-800' :
+                                        'bg-red-100 text-red-800'"
+                                      class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold">
+                                    <span class="h-2 w-2 me-2 rounded-full"
+                                          th:classappend="${candidate.user.status == T(ra.edu.entity.user.Status).ACTIVE} ?
+                                              'bg-green-500' : 'bg-red-500'"></span>
+                                    <span th:text="${candidate.user.status}"></span>
+                                </span>
+                            </td>
+
+
+                            <td class="px-6 py-4">
+                                <a th:href="@{'/admin/candidate/lockAccount/' + ${candidate.id}}"
+                                   th:class="${candidate.user.status == T(ra.edu.entity.user.Status).ACTIVE} ? 'text-red-600 hover:underline flex items-center gap-1' : 'text-blue-600 hover:underline flex items-center gap-1'">
+
+                                    <i th:class="${candidate.user.status == T(ra.edu.entity.user.Status).ACTIVE} ? 'fa-solid fa-lock-open fa-lg' : 'fa-solid fa-lock fa-lg'"
+                                       style="color: #FFD43B;"></i>
+                                    <span th:text="${candidate.user.status == T(ra.edu.entity.user.Status).ACTIVE ? 'Khóa' : 'Mở'}"></span>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Phân trang -->
+                <div class="flex justify-between items-center px-6 py-4 bg-white border-t">
+                    <div class="text-sm text-gray-600">
+                        Hiển thị trang <span th:text="${currentPage + 1}"></span> / <span
+                            th:text="${totalPages}"></span> — Tổng: <span th:text="${totalItems}"></span> người dùng
+                    </div>
+
+                    <div class="flex space-x-1">
+                        <!-- Có thể quay lại trang trước -->
+                        <a th:if="${currentPage > 0}"
+                           th:href="@{'/admin/canidate'(page=${currentPage - 1}, size=${pageSize})}"
+                           class="px-3 py-1 border rounded hover:bg-gray-100">&laquo;</a>
+
+                        <!-- Không thể quay lại, vô hiệu hóa nút -->
+                        <a th:unless="${currentPage > 0}"
+                           class="px-3 py-1 border rounded opacity-50 cursor-not-allowed pointer-events-none">&laquo;</a>
+                        <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                            <a th:if="${i+1 != 0}"
+                               th:href="@{'/admin/candidate'(page=${i}, size=${pageSize})}"
+                               th:text="${i + 1}"
+                               th:classappend="${i == currentPage} ? 'bg-red-600 text-white' : 'bg-white text-gray-700'"
+                               class="px-3 py-1 border rounded hover:bg-gray-100"></a>
+                        </span>
+                        <!-- Khi còn trang tiếp theo -->
+                        <a th:if="${currentPage < totalPages - 1}"
+                           th:href="@{'/admin/candidate'(page=${currentPage + 1}, size=${pageSize})}"
+                           class="px-3 py-1 border rounded hover:bg-gray-100">&raquo;</a>
+
+                        <!-- Khi đang ở trang cuối -->
+                        <a th:unless="${currentPage < totalPages - 1}"
+                           class="px-3 py-1 border rounded opacity-50 cursor-not-allowed pointer-events-none">&raquo;</a>
+
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            function openModal(id) {
+                document.getElementById(id).classList.remove("hidden");
+            }
+
+            function closeModal(id) {
+                document.getElementById(id).classList.add("hidden");
+            }
+
+            function confirmDelete(id) {
+                Swal.fire({
+                    title: 'Bạn có chắc chắn là sẽ thay đổi trạng thái của tài khoản này ?',
+                    text: "Bạn sẽ không thể hoàn tác thao tác này!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonText: 'Hủy',
+                    confirmButtonText: 'Thay đổi'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = `/admin/candidate/lockAccount/${id}`;
+                    }
+                });
+            }
+        </script>
+
+    </body>
+</html>

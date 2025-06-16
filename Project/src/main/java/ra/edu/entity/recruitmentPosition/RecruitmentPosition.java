@@ -6,10 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ra.edu.entity.technology.Technology;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.PrePersist;
+import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +27,12 @@ public class RecruitmentPosition {
     private LocalDate createdDate;
     private LocalDate expiredDate;
     private Status status;
-    @OneToMany
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "recruitmentPosition_technology",
+            joinColumns = @JoinColumn(name = "recruitmentPosition_id"),
+            inverseJoinColumns = @JoinColumn(name = "technologies_id")
+    )
     private List<Technology> technologies;
 
     @PrePersist
@@ -39,6 +41,4 @@ public class RecruitmentPosition {
         createdDate = LocalDate.now();
         status = Status.ACTIVE;
     }
-
-
 }

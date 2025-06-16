@@ -5,7 +5,8 @@
         <title>Dashboard</title>
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
-    <body>
+    <body class="flex">
+        <div th:replace="sidebar :: sidebar"></div>
         <div class="container mx-auto px-6 py-6">
             <div class="bg-white shadow-md rounded-lg p-6 mb-6">
                 <div class="flex items-center justify-between mb-4">
@@ -13,35 +14,48 @@
                         <img th:src="@{../image/technology.svg}">
                         &nbsp; Technology
                     </div>
+
                     <div class="flex items-center space-x-4">
                         <form th:action="@{/admin/technology}" method="get" class="relative">
                             <input
                                     type="text"
                                     name="keyword"
+                                    th:value="${keyword}"
                                     placeholder="Tìm kiếm..."
                                     class="pl-4 pr-10 py-2 border border-gray-300 rounded-md w-72 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                             />
-                            <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                            <button type="submit"
+                                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
                                 🔍
                             </button>
                         </form>
-                        <button onclick="openModal('addTechModal')" class="bg-red-600 text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-red-700">
+
+                        <button onclick="openModal('addTechModal')"
+                                class="bg-red-600 text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-red-700">
                             Thêm Công nghệ
                         </button>
 
                         <!-- Modal Thêm -->
-                        <div id="addTechModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 hidden">
+                        <div id="addTechModal"
+                             th:classappend="${openAddModal} ? 'flex' : 'hidden'"
+                             class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 hidden">
                             <div class="bg-white p-6 rounded-md shadow-md w-[30rem]">
                                 <div class="flex justify-between mb-4">
                                     <h2 class="text-xl font-semibold">Thêm Công nghệ</h2>
                                     <button onclick="closeModal('addTechModal')">✖</button>
                                 </div>
-                                <form th:action="@{/admin/technology/save}" method="post">
-                                    <label class="block text-sm font-medium mb-1">Tên công nghệ <span class="text-red-500">*</span></label>
-                                    <input type="text" name="name" required class="w-full border rounded px-3 py-2 mb-4">
+                                <form th:action="@{/admin/technology/save}" method="post" th:object="${technology}">
+                                    <label class="block text-sm font-medium mb-1">Tên công nghệ <span
+                                            class="text-red-500">*</span></label>
+                                    <input type="text" th:field="*{name}" required
+                                           class="w-full border rounded px-3 py-2 mb-2">
                                     <div class="flex justify-end gap-2">
-                                        <button type="button" onclick="closeModal('addTechModal')" class="px-4 py-2 border rounded">Hủy</button>
-                                        <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Lưu</button>
+                                        <button type="button" onclick="closeModal('addTechModal')"
+                                                class="px-4 py-2 border rounded">Hủy
+                                        </button>
+                                        <button type="submit"
+                                                class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Lưu
+                                        </button>
                                     </div>
                                 </form>
                             </div>
@@ -50,10 +64,13 @@
                     </div>
                 </div>
             </div>
-
+            <div th:if="${errorMessage}" class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                <p th:text="${errorMessage}"></p>
+            </div>
             <!-- Modal Edit -->
             <div th:each="tech : ${technologies}">
-                <div th:id="'editModal-' + ${tech.id}" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center hidden">
+                <div th:id="'editModal-' + ${tech.id}"
+                     class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center hidden">
                     <div class="bg-white p-6 rounded-md shadow-md w-[30rem]">
                         <div class="flex justify-between mb-4">
                             <h2 class="text-xl font-semibold">Chỉnh sửa Công nghệ</h2>
@@ -62,10 +79,15 @@
                         <form th:action="@{/admin/technology/save}" method="post">
                             <input type="hidden" name="id" th:value="${tech.id}">
                             <label class="block text-sm font-medium mb-1">Tên công nghệ</label>
-                            <input type="text" name="name" th:value="${tech.name}" required class="w-full border rounded px-3 py-2 mb-4">
+                            <input type="text" name="name" th:value="${tech.name}" required
+                                   class="w-full border rounded px-3 py-2 mb-4">
                             <div class="flex justify-end gap-2">
-                                <button type="button" th:onclick="'closeModal(\'editModal-' + ${tech.id} + '\')'" class="px-4 py-2 border rounded">Hủy</button>
-                                <button type="submit" class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700">Lưu</button>
+                                <button type="button" th:onclick="'closeModal(\'editModal-' + ${tech.id} + '\')'"
+                                        class="px-4 py-2 border rounded">Hủy
+                                </button>
+                                <button type="submit"
+                                        class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700">Lưu
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -88,14 +110,17 @@
                             <td class="px-6 py-4" th:text="${tech.name}"></td>
                             <td class="px-6 py-4">
                                 <div class="flex gap-2">
-                                    <a href="javascript:void(0);" th:onclick="'openModal(\'editModal-' + ${tech.id} + '\')'" class="text-yellow-600 hover:underline">
+                                    <a href="javascript:void(0);"
+                                       th:onclick="'openModal(\'editModal-' + ${tech.id} + '\')'"
+                                       class="text-yellow-600 hover:underline">
                                         ✏️
                                     </a>
                                 </div>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex gap-2">
-                                    <a href="javascript:void(0);" th:onclick="'confirmDelete(' + ${tech.id} + ')'" class="text-red-600 hover:underline">
+                                    <a href="javascript:void(0);" th:onclick="'confirmDelete(' + ${tech.id} + ')'"
+                                       class="text-red-600 hover:underline">
                                         🗑️
                                     </a>
                                 </div>
@@ -103,6 +128,42 @@
                         </tr>
                     </tbody>
                 </table>
+                <!-- Phân trang -->
+                <div class="flex justify-between items-center px-6 py-4 bg-white border-t">
+                    <div class="text-sm text-gray-600">
+                        Hiển thị trang <span th:text="${currentPage + 1}"></span> / <span
+                            th:text="${totalPages}"></span> — Tổng: <span th:text="${totalItems}"></span> công nghệ
+                    </div>
+
+                    <div class="flex space-x-1">
+                        <!-- Có thể quay lại trang trước -->
+                        <a th:if="${currentPage > 0}"
+                           th:href="@{'/admin/technology'(page=${currentPage - 1}, size=${pageSize})}"
+                           class="px-3 py-1 border rounded hover:bg-gray-100">&laquo;</a>
+
+                        <!-- Không thể quay lại, vô hiệu hóa nút -->
+                        <a th:unless="${currentPage > 0}"
+                           class="px-3 py-1 border rounded opacity-50 cursor-not-allowed pointer-events-none">&laquo;</a>
+                        <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                            <a th:if="${i+1 != 0}"
+                               th:href="@{'/admin/technology'(page=${i}, size=${pageSize})}"
+                               th:text="${i + 1}"
+                               th:classappend="${i == currentPage} ? 'bg-red-600 text-white' : 'bg-white text-gray-700'"
+                               class="px-3 py-1 border rounded hover:bg-gray-100"></a>
+                        </span>
+                        <!-- Khi còn trang tiếp theo -->
+                        <a th:if="${currentPage < totalPages - 1}"
+                           th:href="@{'/admin/technology'(page=${currentPage + 1}, size=${pageSize})}"
+                           class="px-3 py-1 border rounded hover:bg-gray-100">&raquo;</a>
+
+                        <!-- Khi đang ở trang cuối -->
+                        <a th:unless="${currentPage < totalPages - 1}"
+                           class="px-3 py-1 border rounded opacity-50 cursor-not-allowed pointer-events-none">&raquo;</a>
+
+
+                    </div>
+                </div>
+
             </div>
         </div>
 

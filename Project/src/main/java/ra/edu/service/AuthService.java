@@ -8,8 +8,10 @@ import ra.edu.dto.RegistrationDTO;
 import ra.edu.dto.UserDTO;
 import ra.edu.dto.CandidateDTO;
 import ra.edu.entity.candidate.Candidate;
+import ra.edu.entity.technology.Technology;
 import ra.edu.entity.user.User;
-import ra.edu.repository.candidate.CandidateRepositoryImp;
+import ra.edu.repository.CandidateRepository;
+import ra.edu.repository.TechnologyRepository;
 import ra.edu.repository.user.UserRepositoryImp;
 
 import javax.servlet.http.Cookie;
@@ -22,16 +24,19 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-public class UserService {
+public class AuthService {
 
     @Autowired
     private UserRepositoryImp userRepositoryImp;
 
     @Autowired
-    private CandidateRepositoryImp candidateRepositoryImp;
+    private CandidateRepository candidateRepository;
 
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private TechnologyRepository technologyRepository;
 
     @Autowired
     private Validator validator;
@@ -58,15 +63,33 @@ public class UserService {
             return errors;
         }
 
-        User user = modelMapper.map(registrationDTO.getUserDTO(), User.class);
-        userRepositoryImp.save(user);
+        Candidate candidate = new Candidate();
+        CandidateDTO cdto = registrationDTO.getCandidateDTO();
+        candidate.setName(cdto.getName());
+        candidate.setEmail(cdto.getEmail());
+        candidate.setPhone(cdto.getPhone());
+        candidate.setDob(cdto.getDob());
+        candidate.setExperience(cdto.getExperience());
+        candidate.setGender(cdto.getGender());
+        candidate.setDescription(cdto.getDescription());
 
-        Candidate candidate = modelMapper.map(registrationDTO.getCandidateDTO(), Candidate.class);
-        candidate.setId(user.getId()); // one-to-one
-        candidateRepositoryImp.save(candidate);
+        List<Integer> techIds = cdto.getTechnologies().stream()
+                .map(Integer::parseInt)
+                .toList();
 
+        List<Technology> techs = technologyRepository.findAllByIds(techIds);
+
+        candidate.setTechnologyList(techs);
+        User user = new User();
+        user.setUsername(registrationDTO.getUserDTO().getUsername());
+        user.setPassword(registrationDTO.getUserDTO().getPassword());
+        user.setCandidate(candidate);      // one-to-one
+        candidate.setUser(user);           // gán lại liên kết ngược
+
+        candidateRepository.save(candidate);
         return null;
     }
+
 
     @Transactional
     public User login(String username, String password, HttpServletResponse response) {
@@ -108,13 +131,17 @@ public class UserService {
     }
 
     public String getCurrentUserRole(HttpServletRequest request) {
-        for (Cookie cookie : request.getCookies()) {
-            if ("role".equals(cookie.getName())) {
-                return cookie.getValue();
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("role".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
             }
         }
         return null;
     }
+
 
     @Transactional
     public User getUserById(int id) {

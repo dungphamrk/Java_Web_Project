@@ -25,6 +25,21 @@ public class TechnologyRepository {
             return query.list();
         }
     }
+    public List<Technology> findAllActiveWithoutLanding() {
+        try (Session session = sessionFactory.openSession()) {
+            Query<Technology> query = session.createQuery("FROM Technology WHERE status = :status", Technology.class);
+            query.setParameter("status", Status.ACTIVE);
+            return query.list();
+        }
+    }
+
+    public List<Technology> findAllByIds(List<Integer> ids) {
+        try (Session session = sessionFactory.openSession()) {
+            Query<Technology> query = session.createQuery("FROM Technology WHERE id IN :ids", Technology.class);
+            query.setParameter("ids", ids);
+            return query.list();
+        }
+    }
 
     public List<Technology> findAll(int page, int size) {
         try (Session session = sessionFactory.openSession()) {
@@ -79,4 +94,35 @@ public class TechnologyRepository {
             session.getTransaction().commit();
         }
     }
+
+    public boolean existsByName(String name) {
+        try (Session session = sessionFactory.openSession()) {
+            Query<Long> query = session.createQuery("SELECT COUNT(*) FROM Technology WHERE name = :name", Long.class);
+            query.setParameter("name", name);
+            return query.uniqueResult() > 0;
+        }
+    }
+
+    public List<Technology> searchByName(String keyword, int page, int size) {
+        try (Session session = sessionFactory.openSession()) {
+            Query<Technology> query = session.createQuery(
+                    "FROM Technology WHERE lower(name) LIKE :kw AND status = :status", Technology.class);
+            query.setParameter("kw", "%" + keyword.toLowerCase() + "%");
+            query.setParameter("status", Status.ACTIVE);
+            query.setFirstResult(page * size);
+            query.setMaxResults(size);
+            return query.list();
+        }
+    }
+    public long countByName(String keyword) {
+        try (Session session = sessionFactory.openSession()) {
+            Query<Long> query = session.createQuery(
+                    "SELECT COUNT(*) FROM Technology WHERE lower(name) LIKE :kw AND status = :status", Long.class);
+            query.setParameter("kw", "%" + keyword.toLowerCase() + "%");
+            query.setParameter("status", Status.ACTIVE);
+            return query.uniqueResult();
+        }
+    }
+
+
 }

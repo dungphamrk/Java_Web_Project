@@ -7,31 +7,36 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ra.edu.dto.RegistrationDTO;
+import ra.edu.dto.TechnologyDTO;
 import ra.edu.dto.UserDTO;
 import ra.edu.dto.CandidateDTO;
 import ra.edu.entity.user.User;
-import ra.edu.entity.user.UserRole;
-import ra.edu.service.UserService;
+
+import ra.edu.service.AuthService;
+import ra.edu.service.TechnologyService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.List;
-import java.util.Objects;
 
 @Controller
-public class UserController {
+public class AuthController {
 
     @Autowired
-    private UserService userService;
+    private AuthService authService;
+    @Autowired
+    private TechnologyService technologyService;
 
     @GetMapping("/login")
     public String showLogin(Model model, HttpServletRequest request) {
-        String role =userService.getCurrentUserRole(request);
-        if (role.equals("admin")) {
-            return "redirect:/admin";
-        }else if (role.equals("user")) {
-            return "redirect:/user";
+        String role = authService.getCurrentUserRole(request);
+        if (role != null) {
+            if (role.equals("CANDIDATE")) {
+                return "redirect:/home";
+            } else if (role.equals("ADMIN")) {
+                return "redirect:/admin";
+            }
         }
         model.addAttribute("userDTO", new UserDTO());
         return "login";
@@ -39,10 +44,10 @@ public class UserController {
 
     @PostMapping("/login")
     public String login(@ModelAttribute UserDTO userDTO, Model model, HttpSession session, HttpServletResponse response) {
-        User user = userService.login(userDTO.getUsername(), userDTO.getPassword(), response);
+        User user = authService.login(userDTO.getUsername(), userDTO.getPassword(), response);
         if (user != null) {
             session.setAttribute("user", user);
-            return "redirect:/home"; // Adjust redirect as needed
+            return "redirect:/home";
         }
         model.addAttribute("error", "Invalid username or password");
         return "login";
@@ -53,17 +58,25 @@ public class UserController {
         RegistrationDTO registrationDTO = new RegistrationDTO();
         registrationDTO.setUserDTO(new UserDTO());
         registrationDTO.setCandidateDTO(new CandidateDTO());
+        List<TechnologyDTO> technologies= technologyService.findAllActiveWithoutLanding();
         model.addAttribute("registrationDTO", registrationDTO);
+        model.addAttribute("technologies", technologies);
         return "register";
     }
 
     @PostMapping("/register")
     public String register(@ModelAttribute RegistrationDTO registrationDTO, Model model) {
-        List<String> errors = userService.register(registrationDTO);
+        List<String> errors = authService.register(registrationDTO);
         if (errors == null) {
             return "redirect:/login";
         }
         model.addAttribute("errors", errors);
         return "register";
+    }
+    @PostMapping("/logout")
+    public String logout(HttpSession session, HttpServletResponse response) {
+        session.invalidate();
+        authService.logout(response);
+        return "redirect:/login";
     }
 }

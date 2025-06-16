@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ra.edu.entity.candidate.Candidate;
 
 import javax.persistence.*;
 
@@ -21,6 +22,10 @@ public class User  {
     private String password;
     private UserRole role;
     private Status status;
+
+    @OneToOne(cascade = CascadeType.ALL) // Cascade để tự động lưu Candidate khi lưu User
+    @JoinColumn(name = "candidate_id", referencedColumnName = "id") // Khóa ngoại trong bảng User
+    private Candidate candidate;
 
     @PrePersist
     public void prePersist() {

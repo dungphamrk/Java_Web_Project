@@ -27,6 +27,20 @@ public class TechnologyService {
                 .collect(Collectors.toList());
     }
 
+    public List<TechnologyDTO> findAllActiveWithoutLanding() {
+        List<Technology> technologies = technologyRepository.findAllActiveWithoutLanding();
+        return technologies.stream()
+                .map(tech -> modelMapper.map(tech, TechnologyDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    public List<TechnologyDTO> findAllByIds( List<Integer> ids) {
+        List<Technology> technologies = technologyRepository.findAllByIds(ids);
+        return technologies.stream()
+                .map(tech -> modelMapper.map(tech, TechnologyDTO.class))
+                .collect(Collectors.toList());
+    }
+
     public List<TechnologyDTO> findAll(int page, int size) {
         List<Technology> technologies = technologyRepository.findAll(page, size);
         return technologies.stream()
@@ -51,6 +65,11 @@ public class TechnologyService {
     }
 
     public void save(TechnologyDTO technologyDTO) {
+
+        boolean isDuplicate = technologyRepository.existsByName(technologyDTO.getName());
+        if (isDuplicate) {
+            throw new RuntimeException("Tên công nghệ đã tồn tại");
+        }
         Technology technology = modelMapper.map(technologyDTO, Technology.class);
         if (technology.getId() != 0) {
             Technology existing = technologyRepository.findById(technology.getId());
@@ -61,7 +80,21 @@ public class TechnologyService {
         technologyRepository.save(technology);
     }
 
+    public List<TechnologyDTO> searchByName(String keyword, int page, int size) {
+        List<Technology> technologies = technologyRepository.searchByName(keyword, page, size);
+        return technologies.stream()
+                .map(tech -> modelMapper.map(tech, TechnologyDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    public long countByName(String keyword) {
+        return technologyRepository.countByName(keyword);
+    }
+
+
     public void delete(int id) {
         technologyRepository.updateStatus(id, Status.INACTIVE);
     }
+
+
 }

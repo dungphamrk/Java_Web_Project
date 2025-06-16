@@ -92,6 +92,24 @@
             <div th:errors="*{candidateDTO.gender}" class="text-red-600 text-sm mt-1"></div>
           </div>
         </div>
+
+        <!-- Technologies -->
+        <div class="mb-4">
+          <label class="block font-medium mb-2">Technologies</label>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+            <div th:each="tech : ${technologies}">
+              <label class="inline-flex items-center">
+                <input type="checkbox"
+                       th:value="${tech.id}"
+                       th:field="*{candidateDTO.technologies}"
+                       class="form-checkbox text-red-600 rounded mr-2">
+                <span th:text="${tech.name}">Technology Name</span>
+              </label>
+            </div>
+          </div>
+          <div th:errors="*{candidateDTO.technologies}" class="text-red-600 text-sm mt-1"></div>
+        </div>
+
         <!-- Description -->
         <div class="mb-4">
           <label for="description" class="block font-medium">Description</label>
