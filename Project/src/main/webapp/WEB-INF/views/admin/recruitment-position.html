@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8">
+    <title>Recruitment Position</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="flex">
+    <div th:replace="sidebar :: sidebar"></div>
+    <div class="container mx-auto px-6 py-6">
+      <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <h1 class="text-2xl font-semibold">Vị trí tuyển dụng</h1>
+          <button onclick="openModal('addPositionModal')"
+                  class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm">Thêm vị trí
+          </button>
+        </div>
+        <form th:action="@{/admin/recruitment-position}" method="get" class="mb-4 flex justify-end">
+          <input type="text" name="keyword" th:value="${keyword}" placeholder="Tìm kiếm..."
+                 class="pl-4 pr-10 py-2 border rounded w-72 text-sm"/>
+          <button type="submit" class="ml-2 px-4 py-2 bg-gray-200 rounded">🔍</button>
+        </form>
+      </div>
+
+        <div th:if="${errorMessage}" class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            <p th:text="${errorMessage}"></p>
+        </div>
+
+
+      <!-- Modal thêm mới -->
+        <div id="addPositionModal"
+             th:classappend="${openAddModal} ? 'flex' : 'hidden'"
+             class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+            <div class="bg-white p-6 rounded-md shadow-md w-[30rem] overflow-y-auto max-h-[90vh]">
+                <div class="flex justify-between mb-4">
+                    <h2 class="text-xl font-semibold">Thêm Vị trí tuyển dụng</h2>
+                    <button onclick="closeModal('addPositionModal')">✖</button>
+                </div>
+                <form th:action="@{/admin/recruitment-position/save}" method="post" th:object="${position}">
+                    <label class="text-sm font-medium">Tên vị trí <span class="text-red-500">*</span></label>
+                    <input type="text" th:field="*{name}" class="w-full border rounded px-3 py-2 mb-1" required/>
+                    <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-red-500 text-xs mb-2"></p>
+
+                    <label class="text-sm font-medium">Mô tả</label>
+                    <textarea th:field="*{description}" class="w-full border rounded px-3 py-2 mb-2"></textarea>
+
+                    <div class="grid grid-cols-2 gap-4 mb-2">
+                        <div>
+                            <label class="text-sm font-medium">Lương tối thiểu</label>
+                            <input type="number" th:field="*{minSalary}" step="0.1" class="w-full border rounded px-3 py-2"/>
+                            <p th:if="${#fields.hasErrors('minSalary')}" th:errors="*{minSalary}" class="text-red-500 text-xs"></p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium">Lương tối đa</label>
+                            <input type="number" th:field="*{maxSalary}" step="0.1" class="w-full border rounded px-3 py-2"/>
+                            <p th:if="${#fields.hasErrors('maxSalary')}" th:errors="*{maxSalary}" class="text-red-500 text-xs"></p>
+                        </div>
+                    </div>
+
+                    <label class="text-sm font-medium">Kinh nghiệm tối thiểu (năm)</label>
+                    <input type="number" th:field="*{minExperience}" class="w-full border rounded px-3 py-2 mb-2"/>
+                    <p th:if="${#fields.hasErrors('minExperience')}" th:errors="*{minExperience}" class="text-red-500 text-xs mb-2"></p>
+
+                    <label class="text-sm font-medium">Ngày hết hạn <span class="text-red-500">*</span></label>
+                    <input type="date" th:field="*{expiredDate}" class="w-full border rounded px-3 py-2 mb-2"/>
+                    <p th:if="${#fields.hasErrors('expiredDate')}" th:errors="*{expiredDate}" class="text-red-500 text-xs mb-2"></p>
+
+                    <label class="text-sm font-medium mb-1 block">Công nghệ yêu cầu</label>
+                    <div class="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto mb-4">
+                        <div th:each="tech : ${technologies}" class="flex items-center">
+                            <input type="checkbox" th:field="*{technologies}" th:value="${tech.id}"
+                                   class="mr-2"/>
+                            <label th:for="${'tech-' + tech.id}" th:text="${tech.name}"></label>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-2 mt-4">
+                        <button type="button" onclick="closeModal('addPositionModal')" class="px-4 py-2 border rounded">Hủy</button>
+                        <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Lưu</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal chỉnh sửa -->
+        <div id="editPositionModal"
+             th:classappend="${openEditModal} ? 'flex' : 'hidden'"
+             class="fixed inset-0 bg-black bg-opacity-30 hidden items-center justify-center">
+            <div class="bg-white p-6 rounded-md shadow-md w-[30rem] overflow-y-auto max-h-[90vh]">
+                <div class="flex justify-between mb-4">
+                    <h2 class="text-xl font-semibold">Chỉnh sửa vị trí tuyển dụng</h2>
+                    <button type="button" onclick="closeModal('editPositionModal')">✖</button>
+                </div>
+                <form th:action="@{/admin/recruitment-position/save}" method="post" th:object="${position}">
+                    <input type="hidden" th:field="*{id}"/>
+
+                    <label class="text-sm font-medium">Tên vị trí <span class="text-red-500">*</span></label>
+                    <input type="text" th:field="*{name}" class="w-full border rounded px-3 py-2 mb-1" required/>
+                    <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-red-500 text-xs mb-2"></p>
+
+                    <label class="text-sm font-medium">Mô tả</label>
+                    <textarea th:field="*{description}" class="w-full border rounded px-3 py-2 mb-2"></textarea>
+
+                    <div class="grid grid-cols-2 gap-4 mb-2">
+                        <div>
+                            <label class="text-sm font-medium">Lương tối thiểu</label>
+                            <input type="number" th:field="*{minSalary}" step="0.1" class="w-full border rounded px-3 py-2"/>
+                            <p th:if="${#fields.hasErrors('minSalary')}" th:errors="*{minSalary}" class="text-red-500 text-xs"></p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium">Lương tối đa</label>
+                            <input type="number" th:field="*{maxSalary}" step="0.1" class="w-full border rounded px-3 py-2"/>
+                            <p th:if="${#fields.hasErrors('maxSalary')}" th:errors="*{maxSalary}" class="text-red-500 text-xs"></p>
+                        </div>
+                    </div>
+
+                    <label class="text-sm font-medium">Kinh nghiệm tối thiểu (năm)</label>
+                    <input type="number" th:field="*{minExperience}" class="w-full border rounded px-3 py-2 mb-2"/>
+                    <p th:if="${#fields.hasErrors('minExperience')}" th:errors="*{minExperience}" class="text-red-500 text-xs mb-2"></p>
+
+                    <label class="text-sm font-medium">Ngày hết hạn <span class="text-red-500">*</span></label>
+                    <input type="date" th:field="*{expiredDate}" class="w-full border rounded px-3 py-2 mb-2"/>
+                    <p th:if="${#fields.hasErrors('expiredDate')}" th:errors="*{expiredDate}" class="text-red-500 text-xs mb-2"></p>
+
+                    <label class="text-sm font-medium mb-1 block">Công nghệ yêu cầu</label>
+                    <div class="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto mb-4">
+                        <div th:each="tech : ${technologies}" class="flex items-center">
+                            <input type="checkbox" th:field="*{technologies}" th:value="${tech.id}" class="mr-2"/>
+                            <label th:for="${'edit-tech-' + tech.id}" th:text="${tech.name}"></label>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-2 mt-4">
+                        <button type="button" onclick="closeModal('editPositionModal')" class="px-4 py-2 border rounded">Hủy</button>
+                        <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Cập nhật</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+        <!-- Danh sách vị trí -->
+      <div class="bg-white shadow-md rounded-lg overflow-hidden">
+          <table class="min-w-full text-sm text-left">
+              <thead class="bg-gray-100 text-gray-600 font-semibold">
+                  <tr>
+                      <th class="px-6 py-4">STT</th>
+                      <th class="px-6 py-4">Tên vị trí</th>
+                      <th class="px-6 py-4">Mức lương</th>
+                      <th class="px-6 py-4">Kinh nghiệm</th>
+                      <th class="px-6 py-4">Công nghệ</th>
+                      <th class="px-6 py-4">Ngày tạo</th>
+                      <th class="px-6 py-4">Thao tác</th>
+                  </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100" th:each="pos, iter : ${positions}">
+                  <tr class="hover:bg-gray-50">
+                      <td class="px-6 py-4" th:text="${iter.index + 1}"></td>
+                      <td class="px-6 py-4" th:text="${pos.name}"></td>
+                      <td class="px-6 py-4" th:text="${pos.minSalary} + ' - ' + ${pos.maxSalary} + ' VND'"></td>
+                      <td class="px-6 py-4" th:text="${pos.minExperience} + ' năm'"></td>
+
+                      <!-- Công nghệ -->
+                      <td class="px-6 py-4">
+                          <div class="flex flex-wrap gap-1">
+                            <span th:each="tech : ${pos.technologyList}"
+                                  th:text="${tech.name}"
+                                  class="bg-yellow-200 text-yellow-800 text-xs px-2 py-1 rounded"></span>
+                          </div>
+                      </td>
+
+                      <!-- Ngày tạo -->
+                      <td class="px-6 py-4" th:text="${pos.createdDate}"></td>
+
+                      <!-- Thao tác -->
+                      <td class="px-6 py-4">
+                          <div class="flex gap-2">
+                              <a href="javascript:void(0)"
+                                 th:onclick="'openEditModal(' + ${pos.id} + ')'"
+                                 class="text-yellow-600 hover:underline">✏️</a>
+                              <a th:href="@{'/admin/recruitment-position/delete/' + ${pos.id}}"
+                                 class="text-red-600 hover:underline">🗑️</a>
+                          </div>
+                      </td>
+                  </tr>
+              </tbody>
+          </table>
+          <!-- Pagination -->
+          <div th:if="${totalItems > 0}" class="flex justify-between items-center px-6 py-4 bg-white border-t">
+              <div class="text-sm text-gray-600">
+                  Hiển thị trang <span th:text="${currentPage + 1}"></span> / <span th:text="${totalPages}"></span> —
+                  Tổng: <span th:text="${totalItems}"></span> vị trí
+              </div>
+
+              <div class="flex space-x-1">
+                  <!-- Nút trang trước -->
+                  <a th:if="${currentPage > 0}"
+                     th:href="@{'/admin/recruitment-position'(page=${currentPage - 1}, size=${pageSize}, keyword=${keyword})}"
+                     class="px-3 py-1 border rounded hover:bg-gray-100">&laquo;</a>
+                  <a th:unless="${currentPage > 0}"
+                     class="px-3 py-1 border rounded opacity-50 cursor-not-allowed pointer-events-none">&laquo;</a>
+
+                  <!-- Số trang -->
+                  <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                      <a th:href="@{'/admin/recruitment-position'(page=${i}, size=${pageSize}, keyword=${keyword})}"
+                         th:text="${i + 1}"
+                         th:classappend="${i == currentPage} ? 'bg-red-600 text-white' : 'bg-white text-gray-700'"
+                         class="px-3 py-1 border rounded hover:bg-gray-100"></a>
+                    </span>
+
+                  <!-- Nút trang sau -->
+                  <a th:if="${currentPage < totalPages - 1}"
+                     th:href="@{'/admin/recruitment-position'(page=${currentPage + 1}, size=${pageSize}, keyword=${keyword})}"
+                     class="px-3 py-1 border rounded hover:bg-gray-100">&raquo;</a>
+                  <a th:unless="${currentPage < totalPages - 1}"
+                     class="px-3 py-1 border rounded opacity-50 cursor-not-allowed pointer-events-none">&raquo;</a>
+              </div>
+          </div>
+
+      </div>
+    </div>
+
+    <script>
+      function openModal(id) {
+        document.getElementById(id)?.classList.remove("hidden");
+      }
+
+      function closeModal(id) {
+        document.getElementById(id)?.classList.add("hidden");
+      }
+    </script>
+  </body>
+</html>

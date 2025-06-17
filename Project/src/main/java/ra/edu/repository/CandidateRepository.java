@@ -117,7 +117,7 @@ public class CandidateRepository {
     }
     public List<Candidate> filterCandidates(String keyword, String technology, String gender, String age, String experience, int page, int size) {
         try (Session session = sessionFactory.openSession()) {
-            StringBuilder hql = new StringBuilder("SELECT DISTINCT c FROM Candidate c JOIN FETCH c.technologyList t WHERE 1=1");
+            StringBuilder hql = new StringBuilder("SELECT DISTINCT c FROM Candidate c JOIN c.technologyList t WHERE 1=1");
 
             if (keyword != null && !keyword.isEmpty()) {
                 hql.append(" AND lower(c.name) LIKE :keyword");

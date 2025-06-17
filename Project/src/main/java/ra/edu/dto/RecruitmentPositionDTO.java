@@ -4,10 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 import ra.edu.entity.technology.Technology;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -24,10 +26,10 @@ public class RecruitmentPositionDTO {
     @Size(max = 1000, message = "Mô tả không được vượt quá 1000 ký tự")
     private String description;
 
-    @DecimalMin(value = "0.0", inclusive = false, message = "Lương tối thiểu phải lớn hơn 0")
+    @DecimalMin(value = "0", inclusive = false, message = "Lương tối thiểu phải lớn hơn 0")
     private double minSalary;
 
-    @DecimalMin(value = "0.0", inclusive = false, message = "Lương tối đa phải lớn hơn 0")
+    @DecimalMin(value = "0", inclusive = false, message = "Lương tối đa phải lớn hơn 0")
     @DecimalMax(value = "1000000.0", message = "Lương tối đa không được vượt quá 1,000,000")
     private double maxSalary;
 
@@ -36,7 +38,13 @@ public class RecruitmentPositionDTO {
 
     @NotNull(message = "Ngày hết hạn không được để trống")
     @FutureOrPresent(message = "Ngày hết hạn phải từ hôm nay trở đi")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate expiredDate;
 
-    private List<Technology> technologies;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate createdDate;
+
+    private List<String> technologies = new ArrayList<>();
+
+    private List<Technology> technologyList = new ArrayList<>();;
 }
