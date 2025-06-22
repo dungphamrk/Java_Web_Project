@@ -4,11 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ra.edu.entity.candidate.Candidate;
+import ra.edu.entity.recruitmentPosition.RecruitmentPosition;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
@@ -18,9 +17,17 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Application  {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private int candidateId;
-    private int recruitmentPositionId;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "candidate_id")
+    private Candidate candidate;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "recruitmentPosition_id")
+    private RecruitmentPosition recruitmentPosition;
+
     private String cvUrl;
     private Progress progress;
     private LocalDateTime interviewRequestDate;

@@ -1,0 +1,119 @@
+package ra.edu.controller.admin;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import ra.edu.dto.ApplicationDTO;
+import ra.edu.entity.application.Progress;
+import ra.edu.entity.application.RequestResult;
+import ra.edu.service.ApplicationService;
+
+import javax.validation.Valid;
+import java.security.Principal;
+import java.util.List;
+
+@Controller
+@RequestMapping("admin/application")
+public class ApplicationController {
+
+    @Autowired
+    private ApplicationService applicationService;
+
+    @GetMapping("")
+    public String listApplications(@RequestParam(defaultValue = "0") int page,
+                                   @RequestParam(defaultValue = "5") int size,
+                                   @RequestParam(required = false) String keyword,
+                                   @RequestParam(required = false) String progress,
+                                   Model model) {
+        prepareModel(model, page, size, keyword, progress);
+        model.addAttribute("application", new ApplicationDTO());
+        return "/admin/application";
+    }
+
+    @GetMapping("/edit/{id}")
+    public String showEditModal(@PathVariable("id") int id,
+                                @RequestParam(defaultValue = "0") int page,
+                                @RequestParam(defaultValue = "5") int size,
+                                @RequestParam(required = false) String keyword,
+                                @RequestParam(required = false) String progress,
+                                Model model) {
+        ApplicationDTO application = applicationService.findById(id);
+        prepareModel(model, page, size, keyword, progress);
+        model.addAttribute("application", application);
+        model.addAttribute("openEditModal", true);
+        return "/admin/application";
+    }
+
+    @PostMapping("/update-interview")
+    public String updateInterview(@ModelAttribute @Valid ApplicationDTO applicationDTO,
+                                  @RequestParam(defaultValue = "0") int page,
+                                  @RequestParam(defaultValue = "5") int size,
+                                  @RequestParam(required = false) String keyword,
+                                  @RequestParam(required = false) String progress,
+                                  Model model) {
+        applicationService.updateInterview(applicationDTO.getId(), applicationDTO.getInterviewLink(), applicationDTO.getInterviewTime());
+        prepareModel(model, page, size, keyword, progress);
+        model.addAttribute("application", new ApplicationDTO());
+        return "/admin/application";
+    }
+
+    private void prepareModel(Model model, int page, int size, String keyword, String progress) {
+        List<ApplicationDTO> applications;
+        long totalItems;
+
+        if ((keyword != null && !keyword.isEmpty()) || (progress != null && !progress.isEmpty())) {
+            applications = applicationService.filterApplications(keyword, progress, page, size);
+            totalItems = applicationService.getTotalFilteredItems(keyword, progress);
+        } else {
+            applications = applicationService.findAll(page, size);
+            totalItems = applicationService.getTotalItems();
+        }
+
+        int totalPages = (int) Math.ceil((double) totalItems / size);
+
+        model.addAttribute("applications", applications);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("totalItems", totalItems);
+        model.addAttribute("pageSize", size);
+        model.addAttribute("progressOptions", Progress.values());
+    }
+
+    @PostMapping("/destroy")
+    public String destroyApplication(@RequestParam int applicationId,
+                                     @RequestParam String destroyReason,
+                                     RedirectAttributes redirectAttributes) {
+        try {
+            applicationService.updateProgress(applicationId, Progress.REJECT, destroyReason);
+            redirectAttributes.addFlashAttribute("success", "Application rejected successfully.");
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/application";
+    }
+
+    @PostMapping("/approve")
+    public String approveInterview(@RequestParam int applicationId,
+                                   @RequestParam String result,
+                                   @RequestParam String resultNote,
+                                   RedirectAttributes redirectAttributes) {
+        try {
+            ApplicationDTO dto = applicationService.findById(applicationId);
+            dto.setInterviewRequestResult(RequestResult.valueOf(result.toUpperCase()));
+            dto.setInterviewResultNote(resultNote);
+            dto.setProgress(Progress.DONE);
+
+            applicationService.save(dto, ra.edu.validation.OnDone.class);
+            redirectAttributes.addFlashAttribute("success", "Interview result updated.");
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/application";
+    }
+
+
+
+
+}

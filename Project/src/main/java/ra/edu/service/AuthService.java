@@ -77,7 +77,7 @@ public class AuthService {
                 .map(Integer::parseInt)
                 .toList();
 
-        List<Technology> techs = technologyRepository.findAllByIds(techIds);
+        Set<Technology> techs = technologyRepository.findAllByIds(techIds);
 
         candidate.setTechnologyList(techs);
         User user = new User();
@@ -89,7 +89,6 @@ public class AuthService {
         candidateRepository.save(candidate);
         return null;
     }
-
 
     @Transactional
     public User login(String username, String password, HttpServletResponse response) {

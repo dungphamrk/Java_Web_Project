@@ -11,7 +11,9 @@ import ra.edu.repository.RecruitmentPositionRepository;
 import ra.edu.repository.TechnologyRepository;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -83,10 +85,10 @@ public class RecruitmentPositionService {
             List<Integer> techIds = positionDTO.getTechnologies().stream()
                     .map(Integer::parseInt)
                     .toList();
-            List<Technology> technologyList = technologyRepository.findAllByIds(techIds);
+            Set<Technology> technologyList = technologyRepository.findAllByIds(techIds);
             position.setTechnologyList(technologyList);
         } else {
-            position.setTechnologyList(new ArrayList<>());
+            position.setTechnologyList(new HashSet<>());
         }
 
         if (position.getId() != 0) {
@@ -106,10 +108,10 @@ public class RecruitmentPositionService {
             List<Integer> techIds = dto.getTechnologies().stream()
                     .map(Integer::parseInt)
                     .toList();
-            List<Technology> technologyList = technologyRepository.findAllByIds(techIds);
+            Set<Technology> technologyList = technologyRepository.findAllByIds(techIds);
             entity.setTechnologyList(technologyList);
         } else {
-            entity.setTechnologyList(new ArrayList<>());
+            entity.setTechnologyList(new HashSet<>());
         }
     }
 

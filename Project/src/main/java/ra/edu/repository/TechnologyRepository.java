@@ -8,7 +8,9 @@ import org.springframework.stereotype.Repository;
 import ra.edu.entity.technology.Status;
 import ra.edu.entity.technology.Technology;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public class TechnologyRepository {
@@ -22,22 +24,26 @@ public class TechnologyRepository {
             query.setParameter("status", Status.ACTIVE);
             query.setFirstResult(page * size);
             query.setMaxResults(size);
-            return query.list();
+            return query.getResultList();
         }
     }
+
     public List<Technology> findAllActiveWithoutLanding() {
         try (Session session = sessionFactory.openSession()) {
             Query<Technology> query = session.createQuery("FROM Technology WHERE status = :status", Technology.class);
             query.setParameter("status", Status.ACTIVE);
-            return query.list();
+            return query.getResultList();
         }
     }
 
-    public List<Technology> findAllByIds(List<Integer> ids) {
+    public Set<Technology> findAllByIds(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return new HashSet<>();
+        }
         try (Session session = sessionFactory.openSession()) {
             Query<Technology> query = session.createQuery("FROM Technology WHERE id IN :ids", Technology.class);
             query.setParameter("ids", ids);
-            return query.list();
+            return new HashSet<>(query.getResultList());
         }
     }
 
@@ -46,7 +52,7 @@ public class TechnologyRepository {
             Query<Technology> query = session.createQuery("FROM Technology", Technology.class);
             query.setFirstResult(page * size);
             query.setMaxResults(size);
-            return query.list();
+            return query.getResultList();
         }
     }
 
@@ -54,14 +60,14 @@ public class TechnologyRepository {
         try (Session session = sessionFactory.openSession()) {
             Query<Long> query = session.createQuery("SELECT COUNT(*) FROM Technology WHERE status = :status", Long.class);
             query.setParameter("status", Status.ACTIVE);
-            return query.uniqueResult();
+            return query.getSingleResult();
         }
     }
 
     public long countAll() {
         try (Session session = sessionFactory.openSession()) {
             Query<Long> query = session.createQuery("SELECT COUNT(*) FROM Technology", Long.class);
-            return query.uniqueResult();
+            return query.getSingleResult();
         }
     }
 
@@ -99,11 +105,14 @@ public class TechnologyRepository {
         try (Session session = sessionFactory.openSession()) {
             Query<Long> query = session.createQuery("SELECT COUNT(*) FROM Technology WHERE name = :name", Long.class);
             query.setParameter("name", name);
-            return query.uniqueResult() > 0;
+            return query.getSingleResult() > 0;
         }
     }
 
     public List<Technology> searchByName(String keyword, int page, int size) {
+        if (keyword == null) {
+            keyword = "";
+        }
         try (Session session = sessionFactory.openSession()) {
             Query<Technology> query = session.createQuery(
                     "FROM Technology WHERE lower(name) LIKE :kw AND status = :status", Technology.class);
@@ -111,18 +120,20 @@ public class TechnologyRepository {
             query.setParameter("status", Status.ACTIVE);
             query.setFirstResult(page * size);
             query.setMaxResults(size);
-            return query.list();
+            return query.getResultList();
         }
     }
+
     public long countByName(String keyword) {
+        if (keyword == null) {
+            keyword = "";
+        }
         try (Session session = sessionFactory.openSession()) {
             Query<Long> query = session.createQuery(
                     "SELECT COUNT(*) FROM Technology WHERE lower(name) LIKE :kw AND status = :status", Long.class);
             query.setParameter("kw", "%" + keyword.toLowerCase() + "%");
             query.setParameter("status", Status.ACTIVE);
-            return query.uniqueResult();
+            return query.getSingleResult();
         }
     }
-
-
 }

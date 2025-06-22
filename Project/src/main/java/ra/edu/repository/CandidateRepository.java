@@ -58,7 +58,6 @@ public class CandidateRepository {
         }
     }
 
-
     public void delete(int id) {
         try (Session session = sessionFactory.openSession()) {
             session.beginTransaction();
@@ -97,6 +96,7 @@ public class CandidateRepository {
             return query.uniqueResult();
         }
     }
+
     public void toggleUserStatusByCandidateId(int candidateId) {
         try (Session session = sessionFactory.openSession()) {
             session.beginTransaction();
@@ -115,6 +115,7 @@ public class CandidateRepository {
             session.getTransaction().commit();
         }
     }
+
     public List<Candidate> filterCandidates(String keyword, String technology, String gender, String age, String experience, int page, int size) {
         try (Session session = sessionFactory.openSession()) {
             StringBuilder hql = new StringBuilder("SELECT DISTINCT c FROM Candidate c JOIN c.technologyList t WHERE 1=1");
@@ -131,19 +132,35 @@ public class CandidateRepository {
             if (age != null && !age.isEmpty()) {
                 hql.append(" AND ");
                 switch (age) {
-                    case "18-24": hql.append("YEAR(current_date()) - YEAR(c.dob) BETWEEN 18 AND 24"); break;
-                    case "25-30": hql.append("YEAR(current_date()) - YEAR(c.dob) BETWEEN 25 AND 30"); break;
-                    case "31-40": hql.append("YEAR(current_date()) - YEAR(c.dob) BETWEEN 31 AND 40"); break;
-                    case "41+":   hql.append("YEAR(current_date()) - YEAR(c.dob) >= 41"); break;
+                    case "18-24":
+                        hql.append("YEAR(current_date()) - YEAR(c.dob) BETWEEN 18 AND 24");
+                        break;
+                    case "25-30":
+                        hql.append("YEAR(current_date()) - YEAR(c.dob) BETWEEN 25 AND 30");
+                        break;
+                    case "31-40":
+                        hql.append("YEAR(current_date()) - YEAR(c.dob) BETWEEN 31 AND 40");
+                        break;
+                    case "41+":
+                        hql.append("YEAR(current_date()) - YEAR(c.dob) >= 41");
+                        break;
                 }
             }
             if (experience != null && !experience.isEmpty()) {
                 hql.append(" AND ");
                 switch (experience) {
-                    case "0-1": hql.append("c.experience BETWEEN 0 AND 1"); break;
-                    case "2-3": hql.append("c.experience BETWEEN 2 AND 3"); break;
-                    case "4-5": hql.append("c.experience BETWEEN 4 AND 5"); break;
-                    case "5+":  hql.append("c.experience >= 5"); break;
+                    case "0-1":
+                        hql.append("c.experience BETWEEN 0 AND 1");
+                        break;
+                    case "2-3":
+                        hql.append("c.experience BETWEEN 2 AND 3");
+                        break;
+                    case "4-5":
+                        hql.append("c.experience BETWEEN 4 AND 5");
+                        break;
+                    case "5+":
+                        hql.append("c.experience >= 5");
+                        break;
                 }
             }
 
@@ -181,19 +198,35 @@ public class CandidateRepository {
             if (age != null && !age.isEmpty()) {
                 hql.append(" AND ");
                 switch (age) {
-                    case "18-24": hql.append("YEAR(current_date()) - YEAR(c.dob) BETWEEN 18 AND 24"); break;
-                    case "25-30": hql.append("YEAR(current_date()) - YEAR(c.dob) BETWEEN 25 AND 30"); break;
-                    case "31-40": hql.append("YEAR(current_date()) - YEAR(c.dob) BETWEEN 31 AND 40"); break;
-                    case "41+":   hql.append("YEAR(current_date()) - YEAR(c.dob) >= 41"); break;
+                    case "18-24":
+                        hql.append("YEAR(current_date()) - YEAR(c.dob) BETWEEN 18 AND 24");
+                        break;
+                    case "25-30":
+                        hql.append("YEAR(current_date()) - YEAR(c.dob) BETWEEN 25 AND 30");
+                        break;
+                    case "31-40":
+                        hql.append("YEAR(current_date()) - YEAR(c.dob) BETWEEN 31 AND 40");
+                        break;
+                    case "41+":
+                        hql.append("YEAR(current_date()) - YEAR(c.dob) >= 41");
+                        break;
                 }
             }
             if (experience != null && !experience.isEmpty()) {
                 hql.append(" AND ");
                 switch (experience) {
-                    case "0-1": hql.append("c.experience BETWEEN 0 AND 1"); break;
-                    case "2-3": hql.append("c.experience BETWEEN 2 AND 3"); break;
-                    case "4-5": hql.append("c.experience BETWEEN 4 AND 5"); break;
-                    case "5+":  hql.append("c.experience >= 5"); break;
+                    case "0-1":
+                        hql.append("c.experience BETWEEN 0 AND 1");
+                        break;
+                    case "2-3":
+                        hql.append("c.experience BETWEEN 2 AND 3");
+                        break;
+                    case "4-5":
+                        hql.append("c.experience BETWEEN 4 AND 5");
+                        break;
+                    case "5+":
+                        hql.append("c.experience >= 5");
+                        break;
                 }
             }
 
@@ -213,5 +246,13 @@ public class CandidateRepository {
         }
     }
 
+    public Candidate findByUsername(String username) {
+        try (Session session = sessionFactory.openSession()) {
+            String hql = "FROM Candidate c WHERE c.user.username = :username";
+            Query<Candidate> query = session.createQuery(hql, Candidate.class);
+            query.setParameter("username", username);
+            return query.uniqueResult(); // Trả về 1 Candidate duy nhất
+        }
+    }
 
 }

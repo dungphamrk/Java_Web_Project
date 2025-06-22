@@ -10,6 +10,7 @@
     import java.time.LocalDate;
     import java.util.ArrayList;
     import java.util.List;
+    import java.util.Set;
 
     @Entity
     @Getter
@@ -39,7 +40,7 @@
                 joinColumns = @JoinColumn(name = "recruitmentPosition_id"),
                 inverseJoinColumns = @JoinColumn(name = "technologies_id")
         )
-        private List<Technology> technologyList;
+        private Set<Technology> technologyList;
 
         @PrePersist
         public void prePersist()

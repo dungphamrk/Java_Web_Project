@@ -38,6 +38,7 @@ public class RecruitmentPositionDTO {
 
     @NotNull(message = "Ngày hết hạn không được để trống")
     @FutureOrPresent(message = "Ngày hết hạn phải từ hôm nay trở đi")
+
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate expiredDate;
 

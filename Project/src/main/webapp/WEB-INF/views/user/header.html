@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <div th:fragment="header">
+        <div class="bg-white shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            Intern <span class="text-red-600">SHIP</span>
+                        </h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <!-- Nếu chưa đăng nhập -->
+                        <a th:if="${username == null}"
+                           href="/login"
+                                class="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition-colors">
+                            Sign In / Sign Up
+                        </a>
+
+                        <!-- Nếu đã đăng nhập -->
+                        <div class="relative" th:if="${username != null}">
+                            <button class="flex items-center text-sm font-medium text-gray-900 hover:text-red-600 focus:outline-none"
+                                    onclick="toggleDropdown()">
+                                Hello, <span class="ml-1 text-red-600" th:text="${username}">User</span>
+                                <svg class="ml-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M5.25 7.25L10 12.25L14.75 7.25H5.25Z" />
+                                </svg>
+                            </button>
+                            <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 z-50">
+                                <a href="/user/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Information</a>
+                                <a href="/user/application" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Application</a>
+                                <form action="/logout" method="post">
+                                    <button type="submit" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                        Logout
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleDropdown() {
+            const menu = document.getElementById('dropdownMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Optional: ẩn dropdown khi click ngoài
+        document.addEventListener('click', function (e) {
+            const btn = document.querySelector('button[onclick="toggleDropdown()"]');
+            const dropdown = document.getElementById('dropdownMenu');
+            if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    </script>
+
+
+</html>

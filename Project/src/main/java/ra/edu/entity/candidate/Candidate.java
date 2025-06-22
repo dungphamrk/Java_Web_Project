@@ -8,6 +8,7 @@ import ra.edu.entity.user.User;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -30,7 +31,7 @@ public class Candidate {
             joinColumns = @JoinColumn(name = "candidate_id"),
             inverseJoinColumns = @JoinColumn(name = "technology_id")
     )
-    private List<Technology> technologyList;
+    private Set<Technology> technologyList;
 
     @OneToOne(mappedBy = "candidate")
     @Cascade(org.hibernate.annotations.CascadeType.ALL)

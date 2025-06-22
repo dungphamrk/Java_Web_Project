@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'war'
+    id 'org.jetbrains.kotlin.jvm'
 }
 
 group 'com.data'
@@ -18,8 +19,6 @@ ext {
     mysqlVersion = '8.0.33' // Nâng cấp MySQL Connector
 }
 
-sourceCompatibility = '21'
-targetCompatibility = '21'
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
@@ -56,10 +55,14 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.modelmapper/modelmapper
     implementation 'org.modelmapper:modelmapper:3.1.1'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
 
 }
 
 test {
     useJUnitPlatform()
+}
+kotlin {
+    jvmToolchain(21)
 }
