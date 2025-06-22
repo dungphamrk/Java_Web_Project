@@ -1,6 +1,5 @@
 package ra.edu.service;
 
-
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,20 +39,27 @@ public class ApplicationService {
 
     public List<ApplicationDTO> findAll(int page, int size) {
         List<Application> applications = applicationRepository.findAll(page, size);
-        List<ApplicationDTO> applicationDTO = applications.stream()
+        return applications.stream()
                 .map(application -> modelMapper.map(application, ApplicationDTO.class))
                 .collect(Collectors.toList());
-
-        return applicationDTO;
     }
 
-    public void updateInterview(int id, String interviewLink, LocalDateTime interviewTime) {
+    public String updateInterview(int id, String interviewLink, LocalDateTime interviewTime) {
+        if (!applicationRepository.restrictFinalStateUpdates(id)) {
+            return "Không thể thao tác với ứng tuyển này.";
+        }
         Application application = applicationRepository.findById(id);
+        if (application == null) {
+            return "Ứng tuyển không tồn tại.";
+        }
         application.setInterviewLink(interviewLink);
         application.setInterviewTime(interviewTime);
         application.setProgress(Progress.HANDLING);
         application.setUpdateAt(LocalDateTime.now());
-        applicationRepository.save(application);
+        if (!applicationRepository.save(application)) {
+            return "Không thể thao tác với ứng tuyển này.";
+        }
+        return null;
     }
 
     public long getTotalItems() {
@@ -63,34 +69,39 @@ public class ApplicationService {
     public ApplicationDTO findById(int id) {
         Application application = applicationRepository.findById(id);
         if (application == null || application.getProgress() == Progress.CANCEL) {
-            throw new RuntimeException("Application not found");
+            throw new RuntimeException("Ứng tuyển không tồn tại.");
         }
         return modelMapper.map(application, ApplicationDTO.class);
     }
 
-    public void save(ApplicationDTO applicationDTO, Class<?> validationGroup) {
+    public String save(ApplicationDTO applicationDTO, Class<?> validationGroup) {
         // Validate DTO based on progress group
         Set<ConstraintViolation<ApplicationDTO>> violations = validator.validate(applicationDTO, validationGroup);
         if (!violations.isEmpty()) {
-            String errorMessage = violations.stream()
+            return violations.stream()
                     .map(ConstraintViolation::getMessage)
                     .collect(Collectors.joining("; "));
-            throw new RuntimeException(errorMessage);
         }
         Application application = modelMapper.map(applicationDTO, Application.class);
 
         // Preserve existing fields for updates
         if (application.getId() != 0) {
+            if (!applicationRepository.restrictFinalStateUpdates(application.getId())) {
+                return "Không thể thao tác với đơn ứng tuyển này.";
+            }
             Application existing = applicationRepository.findById(application.getId());
             if (existing == null) {
-                throw new RuntimeException("Application not found");
+                return "Ứng tuyển không tồn tại.";
             }
             application.setCreateAt(existing.getCreateAt());
             application.setUpdateAt(existing.getUpdateAt());
             application.setProgress(existing.getProgress());
         }
 
-        applicationRepository.save(application);
+        if (!applicationRepository.save(application)) {
+            return "Không thể thao tác với đơn ứng tuyển này.";
+        }
+        return null;
     }
 
     public List<ApplicationDTO> filterApplications(String keyword, String progress, int page, int size) {
@@ -104,13 +115,15 @@ public class ApplicationService {
         return applicationRepository.countFilteredApplications(keyword, progress);
     }
 
-    public void updateProgress(int id, Progress progress, String destroyReason) {
-        Application application = applicationRepository.findById(id);
-        if (application == null) {
-            throw new RuntimeException("Application not found");
+    public String updateProgress(int id, Progress progress, String destroyReason) {
+        if (!applicationRepository.restrictFinalStateUpdates(id)) {
+            return "Không thể thao tác với ứng tuyển này.";
         }
 
-        // Validate based on progress group
+        Application application = applicationRepository.findById(id);
+        if (application == null) {
+            return "Ứng tuyển không tồn tại.";
+        }
         ApplicationDTO dto = modelMapper.map(application, ApplicationDTO.class);
         dto.setProgress(progress);
         if (progress == Progress.REJECT || progress == Progress.CANCEL) {
@@ -129,25 +142,28 @@ public class ApplicationService {
 
         Set<ConstraintViolation<ApplicationDTO>> violations = validator.validate(dto, validationGroup);
         if (!violations.isEmpty()) {
-            String errorMessage = violations.stream()
+            return violations.stream()
                     .map(ConstraintViolation::getMessage)
                     .collect(Collectors.joining("; "));
-            throw new RuntimeException(errorMessage);
         }
 
-        applicationRepository.updateProgress(id, progress, destroyReason);
+        if (!applicationRepository.updateProgress(id, progress, destroyReason)) {
+            return "Không thể thao tác với ứng tuyển này.";
+        }
+        return null;
     }
 
-
-    public void createApplication(int positionId, String username, String cvUrl) {
+    public String createApplication(int positionId, String username, String cvUrl) {
         Application app = new Application();
         app.setCvUrl(cvUrl);
         app.setRecruitmentPosition(recruitmentPositionRepository.findById(positionId));
         app.setCandidate(candidateRepository.findByUsername(username));
         app.setProgress(Progress.PENDING);
-        applicationRepository.save(app);
+        if (!applicationRepository.save(app)) {
+            return "Không thể tạo ứng tuyển.";
+        }
+        return null;
     }
-
 
     public List<ApplicationDTO> findAllByUser(String username, String keyword, String progress, int page, int size) {
         return applicationRepository.findByUserAndFilter(username, keyword, progress, page, size)
@@ -159,5 +175,4 @@ public class ApplicationService {
     public long getTotalByUser(String username, String keyword, String progress) {
         return applicationRepository.countByUserAndFilter(username, keyword, progress);
     }
-
 }

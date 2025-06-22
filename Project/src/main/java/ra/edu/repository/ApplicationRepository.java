@@ -16,6 +16,18 @@ public class ApplicationRepository {
     @Autowired
     private SessionFactory sessionFactory;
 
+    public boolean restrictFinalStateUpdates(int id) {
+        try (Session session = sessionFactory.openSession()) {
+            Application application = session.get(Application.class, id);
+            if (application == null) {
+                return false;
+            }
+            return !(application.getProgress() == Progress.DONE ||
+                    application.getProgress() == Progress.REJECT ||
+                    application.getProgress() == Progress.CANCEL);
+        }
+    }
+
     public List<Application> findAll(int page, int size) {
         try (Session session = sessionFactory.openSession()) {
             Query<Application> query = session.createQuery(
@@ -42,23 +54,30 @@ public class ApplicationRepository {
         }
     }
 
-    public void save(Application application) {
+    public boolean save(Application application) {
         try (Session session = sessionFactory.openSession()) {
             session.beginTransaction();
+            if (application.getId() != 0) {
+                if (!restrictFinalStateUpdates(application.getId())) {
+                    return false;
+                }
+            }
             if (application.getId() == 0) {
                 session.save(application);
             } else {
                 session.update(application);
             }
             session.getTransaction().commit();
+            return true;
         }
     }
 
-
-
-    public void updateProgress(int id, Progress progress, String destroyReason) {
+    public boolean updateProgress(int id, Progress progress, String destroyReason) {
         try (Session session = sessionFactory.openSession()) {
             session.beginTransaction();
+            if (!restrictFinalStateUpdates(id)) {
+                return false;
+            }
             Application application = session.get(Application.class, id);
             if (application != null) {
                 application.setProgress(progress);
@@ -69,6 +88,7 @@ public class ApplicationRepository {
                 session.update(application);
             }
             session.getTransaction().commit();
+            return true;
         }
     }
 
@@ -127,10 +147,9 @@ public class ApplicationRepository {
         }
     }
 
-
     public List<Application> findByUserAndFilter(String username, String keyword, String progress, int page, int size) {
         try (Session session = sessionFactory.openSession()) {
-            StringBuilder hql = new StringBuilder("FROM Application a WHERE a.candidate.username = :username");
+            StringBuilder hql = new StringBuilder("FROM Application a WHERE a.candidate.user.username = :username");
 
             if (keyword != null && !keyword.isEmpty()) {
                 hql.append(" AND a.recruitmentPosition.name LIKE :keyword");
@@ -160,7 +179,7 @@ public class ApplicationRepository {
 
     public long countByUserAndFilter(String username, String keyword, String progress) {
         try (Session session = sessionFactory.openSession()) {
-            StringBuilder hql = new StringBuilder("SELECT COUNT(a) FROM Application a WHERE a.candidate.username = :username");
+            StringBuilder hql = new StringBuilder("SELECT COUNT(a) FROM Application a WHERE a.candidate.user.username = :username");
 
             if (keyword != null && !keyword.isEmpty()) {
                 hql.append(" AND a.recruitmentPosition.name LIKE :keyword");

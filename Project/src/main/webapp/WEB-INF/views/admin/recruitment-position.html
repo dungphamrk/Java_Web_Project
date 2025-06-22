@@ -183,10 +183,10 @@
                       <td class="px-6 py-4 border border-gray-200 text-center">
                           <div class="flex justify-center space-x-3">
                               <a th:href="@{/admin/recruitment-position/edit/{id}(id=${pos.id})}"
-                                 class="text-yellow-600 hover:text-yellow-800 text-xl">✏️</a>
+                                 class="text-yellow-600 hover:text-yellow-800 text-xl">   <img th:src="@{/image/pencil.svg}"></a>
                               <a href="javascript:void(0);"
                                  th:onclick="'confirmDelete(' + ${pos.id} + ')'"
-                                 class="text-red-600 hover:text-red-800 text-xl">🗑️</a>
+                                 class="text-red-600 hover:text-red-800 text-xl"> <img th:src="@{/image/trash.svg}"></a>
                           </div>
                       </td>
                   </tr>

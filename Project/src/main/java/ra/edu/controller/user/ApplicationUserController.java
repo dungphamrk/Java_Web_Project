@@ -33,7 +33,10 @@ public class ApplicationUserController {
                                        Model model) {
 
         String username = authService.getCurrentUsername(request);
-
+        if(username==null){
+            model.addAttribute("error","Bạn cần đăng nhập để xem thông tin đơn tuyển dụng");
+            return "/login";
+        }
         // Lấy danh sách đơn ứng tuyển theo user
         List<ApplicationDTO> applications = applicationService.findAllByUser(username, keyword, progress, page, size);
         long totalItems = applicationService.getTotalByUser(username, keyword, progress);

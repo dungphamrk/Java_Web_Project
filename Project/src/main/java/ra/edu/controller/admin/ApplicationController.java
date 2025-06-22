@@ -11,7 +11,6 @@ import ra.edu.entity.application.RequestResult;
 import ra.edu.service.ApplicationService;
 
 import javax.validation.Valid;
-import java.security.Principal;
 import java.util.List;
 
 @Controller
@@ -52,11 +51,24 @@ public class ApplicationController {
                                   @RequestParam(defaultValue = "5") int size,
                                   @RequestParam(required = false) String keyword,
                                   @RequestParam(required = false) String progress,
-                                  Model model) {
-        applicationService.updateInterview(applicationDTO.getId(), applicationDTO.getInterviewLink(), applicationDTO.getInterviewTime());
-        prepareModel(model, page, size, keyword, progress);
-        model.addAttribute("application", new ApplicationDTO());
-        return "/admin/application";
+                                  RedirectAttributes redirectAttributes) {
+        String error = applicationService.updateInterview(
+                applicationDTO.getId(),
+                applicationDTO.getInterviewLink(),
+                applicationDTO.getInterviewTime()
+        );
+        if (error != null) {
+            redirectAttributes.addFlashAttribute("error", error);
+            redirectAttributes.addFlashAttribute("openInterviewModal", true); // mở lại modal
+            redirectAttributes.addFlashAttribute("applicationId", applicationDTO.getId());
+            return "redirect:/admin/application?page=" + page + "&size=" + size +
+                    (keyword != null ? "&keyword=" + keyword : "") +
+                    (progress != null ? "&progress=" + progress : "");
+        }
+        redirectAttributes.addFlashAttribute("success", "Cập nhật thông tin phỏng vấn thành công.");
+        return "redirect:/admin/application?page=" + page + "&size=" + size +
+                (keyword != null ? "&keyword=" + keyword : "") +
+                (progress != null ? "&progress=" + progress : "");
     }
 
     private void prepareModel(Model model, int page, int size, String keyword, String progress) {
@@ -85,11 +97,13 @@ public class ApplicationController {
     public String destroyApplication(@RequestParam int applicationId,
                                      @RequestParam String destroyReason,
                                      RedirectAttributes redirectAttributes) {
-        try {
-            applicationService.updateProgress(applicationId, Progress.REJECT, destroyReason);
-            redirectAttributes.addFlashAttribute("success", "Application rejected successfully.");
-        } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        String error = applicationService.updateProgress(applicationId, Progress.REJECT, destroyReason);
+        if (error != null) {
+            redirectAttributes.addFlashAttribute("error", error);
+            redirectAttributes.addFlashAttribute("openDestroyModal", true);
+            redirectAttributes.addFlashAttribute("applicationId", applicationId);
+        } else {
+            redirectAttributes.addFlashAttribute("success", "Ứng tuyển đã bị từ chối thành công.");
         }
         return "redirect:/admin/application";
     }
@@ -99,21 +113,19 @@ public class ApplicationController {
                                    @RequestParam String result,
                                    @RequestParam String resultNote,
                                    RedirectAttributes redirectAttributes) {
-        try {
-            ApplicationDTO dto = applicationService.findById(applicationId);
-            dto.setInterviewRequestResult(RequestResult.valueOf(result.toUpperCase()));
-            dto.setInterviewResultNote(resultNote);
-            dto.setProgress(Progress.DONE);
+        ApplicationDTO dto = applicationService.findById(applicationId);
+        dto.setInterviewRequestResult(RequestResult.valueOf(result.toUpperCase()));
+        dto.setInterviewResultNote(resultNote);
+        dto.setProgress(Progress.DONE);
 
-            applicationService.save(dto, ra.edu.validation.OnDone.class);
-            redirectAttributes.addFlashAttribute("success", "Interview result updated.");
-        } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        String error = applicationService.save(dto, ra.edu.validation.OnDone.class);
+        if (error != null) {
+            redirectAttributes.addFlashAttribute("error", error);
+            redirectAttributes.addFlashAttribute("openApproveModal", true);
+            redirectAttributes.addFlashAttribute("applicationId", applicationId);
+        } else {
+            redirectAttributes.addFlashAttribute("success", "Kết quả phỏng vấn đã được cập nhật.");
         }
         return "redirect:/admin/application";
     }
-
-
-
-
 }

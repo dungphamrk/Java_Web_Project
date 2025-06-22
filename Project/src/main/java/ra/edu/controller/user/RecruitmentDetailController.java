@@ -47,7 +47,6 @@ public class RecruitmentDetailController {
             String username = authService.getCurrentUsername(request);
             if (username == null) {
                 redirectAttributes.addFlashAttribute("error", "Bạn cần đăng nhập để ứng tuyển.");
-                return "redirect:/login";
             }
             applicationService.createApplication(positionId, username, cvUrl);
             redirectAttributes.addFlashAttribute("success", "Application submitted successfully.");

@@ -113,7 +113,7 @@
                                     <a href="javascript:void(0);"
                                        th:onclick="'openModal(\'editModal-' + ${tech.id} + '\')'"
                                        class="text-yellow-600 hover:underline">
-                                        ✏️
+                                        <img th:src="@{/image/pencil.svg}">
                                     </a>
                                 </div>
                             </td>
@@ -121,7 +121,7 @@
                                 <div class="flex gap-2">
                                     <a href="javascript:void(0);" th:onclick="'confirmDelete(' + ${tech.id} + ')'"
                                        class="text-red-600 hover:underline">
-                                        🗑️
+                                        <img th:src="@{/image/trash.svg}">
                                     </a>
                                 </div>
                             </td>

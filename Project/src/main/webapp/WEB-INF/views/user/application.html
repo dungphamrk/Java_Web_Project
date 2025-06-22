@@ -12,12 +12,10 @@
             <!-- Header -->
             <div class="bg-white shadow-md rounded-lg p-6 mb-6">
                 <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center text-xl font-semibold">
-                        <img th:src="@{../image/application.svg}" class="w-6 h-6"/>
-                        Applications
+                    <div class="flex items-center text-2xl font-semibold">
+                        My Applications
                     </div>
-                </div>
-                <form th:action="@{/admin/application}" method="get" class="mb-4 flex justify-end gap-2">
+                    <form th:action="@{/admin/application}" method="get" class="mb-4 flex justify-end gap-2">
                     <select name="progress" th:value="${progress}"
                             class="border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700">
                         <option value="">Trạng thái</option>
@@ -30,6 +28,8 @@
                            class="pl-4 pr-10 py-2 border rounded w-72 text-sm"/>
                     <button type="submit" class="px-4 py-2 bg-gray-200 rounded">🔍</button>
                 </form>
+                </div>
+
             </div>
 
             <!-- Danh sách đơn ứng tuyển -->
@@ -51,7 +51,8 @@
 
                             <td class="px-6 py-4 border underline cursor-pointer"
                                 th:text="${app.recruitmentPosition.name}"
-                                th:onclick="'openInterviewModal(' + ${app.id} + ')'">
+                                th:attr="data-cv=${app.cvUrl}"
+                                onclick="openImgModal(this.dataset.cv)">>
                             </td>
 
                             <td class="px-6 py-4 border" th:text="${app.getFormattedCreateAt()}"></td>
@@ -93,20 +94,20 @@
                             <td class="px-6 py-4 border text-center">
                                 <div class="flex justify-center gap-3">
                                     <!-- Trash Icon (Destroy) -->
-                                    <a th:onclick="'showDestroyModal(' + ${app.id} + ')'"
+                                    <a th:attr="data-id=${app.id}, data-reason=${app.destroyReason}"
+                                       onclick="showDestroyModal(this)"
                                        class="text-red-600 hover:text-red-800">
                                         <img th:src="@{/image/trash.svg}" alt="Destroy" class="w-6 h-6"/>
                                     </a>
 
                                     <!-- Approve Icon -->
-
-                                    <a th:if="${app.progress}" th:onclick="'showApproveModal(' + ${app.id} + ')'"
+                                    <a th:attr="data-id=${app.id}, data-result=${app.interviewResult}, data-note=${app.interviewResultNote}"
+                                       onclick="showApproveModal(this)"
                                        class="text-green-600 hover:text-green-800">
                                         <img th:src="@{/image/approve.svg}" alt="Approve" class="w-6 h-6"/>
                                     </a>
                                 </div>
                             </td>
-
                         </tr>
                     </tbody>
                 </table>
@@ -141,17 +142,64 @@
             </div>
         </div>
 
+        <!-- Modal CV -->
+        <div id="cvModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center">
+            <!-- Modal Content Box -->
+            <div class="bg-white rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+                <!-- Header -->
+                <div class="flex items-center justify-between border-b px-6 py-4">
+                    <h2 class="text-lg font-semibold text-gray-800">CV Candidate</h2>
+                    <button onclick="closeImgModal()" class="text-gray-500 hover:text-red-500 text-2xl font-bold">&times;</button>
+                </div>
+
+                <!-- Body (Image Preview) -->
+                <div class="p-4 flex justify-center items-start">
+                    <img id="modalImage"
+                         src=""
+                         alt="CV Image"
+                         class="max-w-full max-h-[80vh] object-contain border rounded-md shadow" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Approve Modal -->
+        <div id="approveModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+            <div class="bg-white p-6 rounded shadow-lg w-full max-w-md">
+                <h2 class="text-lg font-semibold mb-4">Approve Interview</h2>
+                <form th:action="@{/admin/application/approve}" method="post">
+                    <input type="hidden" name="applicationId" id="approveAppId"/>
+                    <label>Interview Result *</label>
+                    <input type="text" name="result" required class="w-full border rounded px-3 py-2 mb-4"/>
+                    <label>Interview Result Note *</label>
+                    <textarea name="resultNote" rows="4" required class="w-full border rounded px-3 py-2"></textarea>
+                    <div class="flex justify-end mt-4">
+                        <button type="button" onclick="hideApproveModal()" class="px-4 py-2 border rounded">Cancel</button>
+                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Destroy Modal -->
+        <div id="destroyModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+            <div class="bg-white p-6 rounded shadow-lg w-full max-w-md">
+                <h2 class="text-lg font-semibold mb-4">Destroy Interview</h2>
+                <form th:action="@{/admin/application/destroy}" method="post">
+                    <input type="hidden" name="applicationId" id="destroyAppId"/>
+                    <label>Destroy Reason *</label>
+                    <textarea name="destroyReason" required class="w-full border rounded px-3 py-2" rows="4"></textarea>
+                    <div class="flex justify-end mt-4">
+                        <button type="button" onclick="hideDestroyModal()" class="px-4 py-2 border rounded">Cancel</button>
+                        <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
         <div th:replace="user/footer :: footer"></div>
     </body>
     <script>
-
-        function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
 
         function toggleDropdown() {
             const menu = document.getElementById('dropdownMenu');
@@ -166,5 +214,42 @@
                 dropdown.classList.add('hidden');
             }
         });
+
+        document.querySelectorAll('.cv-link').forEach(link => {
+            link.addEventListener('click', function () {
+                const imageUrl = this.dataset.cv;
+                openImgModal(imageUrl);
+            });
+        });
+
+        function openImgModal(imageUrl) {
+            const modal = document.getElementById('cvModal');
+            const modalImage = document.getElementById('modalImage');
+            modal.classList.remove('hidden');
+            modalImage.src = imageUrl;
+        }
+        function closeImgModal() {
+            const modal = document.getElementById('cvModal');
+            modal.classList.add('hidden');
+            document.getElementById('modalImage').src = '';
+        }
+
+        function showApproveModal(element) {
+            document.getElementById('approveAppId').value = element.dataset.id;
+            document.querySelector('input[name="result"]').value = element.dataset.result || '';
+            document.querySelector('textarea[name="resultNote"]').value = element.dataset.note || '';
+            document.getElementById('approveModal').classList.remove('hidden');
+        }
+        function hideApproveModal() {
+            document.getElementById('approveModal').classList.add('hidden');
+        }
+        function showDestroyModal(element) {
+            document.getElementById('destroyAppId').value = element.dataset.id;
+            document.querySelector('textarea[name="destroyReason"]').value = element.dataset.reason || '';
+            document.getElementById('destroyModal').classList.remove('hidden');
+        }
+        function hideDestroyModal() {
+            document.getElementById('destroyModal').classList.add('hidden');
+        }
     </script>
 </html>
