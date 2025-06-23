@@ -54,7 +54,14 @@ public class RecruitmentPositionService {
         if (position == null || position.getStatus() == Status.INACTIVE) {
             throw new RuntimeException("Recruitment position not found");
         }
-        return modelMapper.map(position, RecruitmentPositionDTO.class);
+
+        RecruitmentPositionDTO dto =modelMapper.map(position, RecruitmentPositionDTO.class);
+        dto.setTechnologies(
+                position.getTechnologyList().stream()
+                        .map(tech -> String.valueOf(tech.getId()))
+                        .collect(Collectors.toList())
+        );
+        return dto;
     }
 
     public void save(RecruitmentPositionDTO positionDTO) {

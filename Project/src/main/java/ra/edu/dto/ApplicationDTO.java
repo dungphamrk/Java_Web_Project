@@ -40,16 +40,16 @@ public class ApplicationDTO {
     private Progress progress;
 
     @NotNull(message = "Thời gian yêu cầu phỏng vấn không được để trống", groups = {
-            OnHandling.class, OnInterviewing.class, OnDone.class,  OnCancel.class
+            OnHandling.class, OnInterviewing.class, OnDone.class
     })
     @FutureOrPresent(message = "Thời gian yêu cầu phỏng vấn phải từ hiện tại trở đi", groups = {
-            OnHandling.class, OnInterviewing.class, OnDone.class, OnCancel.class
+            OnHandling.class, OnInterviewing.class, OnDone.class
     })
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime interviewRequestDate;
 
     @NotNull(message = "Kết quả yêu cầu phỏng vấn không được để trống", groups = {
-            OnHandling.class, OnInterviewing.class, OnDone.class, OnCancel.class
+            OnHandling.class, OnInterviewing.class, OnDone.class
     })
     private RequestResult interviewRequestResult;
 
@@ -83,13 +83,15 @@ public class ApplicationDTO {
     private String interviewResult;
 
     public String getFormattedCreateAt() {
-        if (updateAt == null) return "";
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        return updateAt.format(formatter);
-    }
-    public String getFormattedUpdateAt() {
         if (createAt == null) return "";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         return createAt.format(formatter);
     }
+
+    public String getFormattedUpdateAt() {
+        if (updateAt == null) return "";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        return updateAt.format(formatter);
+    }
+
 }

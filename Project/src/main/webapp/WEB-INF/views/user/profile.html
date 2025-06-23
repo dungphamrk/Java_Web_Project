@@ -9,7 +9,10 @@
         <div th:replace="user/header :: header"></div>
         <div class="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-lg shadow">
             <h2 class="text-2xl font-bold mb-6">Edit personal information</h2>
-
+            <div th:if="${success != null}"
+                 class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-6">
+                <p th:text="${success}"></p>
+            </div>
             <div th:object="${user}">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Name -->
@@ -38,10 +41,10 @@
                         <label class="block mb-1 font-medium">Gender *</label>
                         <select th:field="*{gender}" disabled
                                 class="w-full border border-gray-300 px-4 py-2 rounded bg-gray-100 text-gray-600">
-                            <option value="MALE">Male</option>
-                            <option value="FEMALE">Female</option>
-                            <option value="OTHER">Other</option>
+                            <option th:each="g : ${T(ra.edu.entity.candidate.Gender).values()}"
+                                    th:value="${g.name()}" th:text="${g}">Gender</option>
                         </select>
+
                     </div>
 
                     <!-- Date of Birth -->
@@ -134,10 +137,10 @@
                                 <select th:field="*{gender}" required
                                         class="border border-gray-300 px-4 py-2 rounded w-full">
                                     <option value="" disabled>-- Select Gender --</option>
-                                    <option value="MALE">Male</option>
-                                    <option value="FEMALE">Female</option>
-                                    <option value="OTHER">Other</option>
+                                    <option th:each="g : ${T(ra.edu.entity.candidate.Gender).values()}"
+                                            th:value="${g.name()}" th:text="${g}">Gender</option>
                                 </select>
+
                                 <p th:if="${#fields.hasErrors('gender')}" th:errors="*{gender}"
                                    class="text-red-500 text-sm mt-1"></p>
                             </div>
@@ -158,14 +161,21 @@
                                    class="text-red-500 text-sm mt-1"></p>
                             </div>
 
-                            <!-- Technology (readonly hiển thị) -->
+                            <!-- Technology -->
                             <div class="md:col-span-2">
                                 <label class="block mb-1 font-medium">Technology</label>
-                                <div class="flex flex-wrap gap-2 mt-2">
-                        <span th:each="tech : *{technologyList}"
-                              class="bg-orange-100 text-orange-800 text-sm px-3 py-1 rounded-full border"
-                              th:text="${tech.name}"></span>
+                                <div class="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto border rounded p-2">
+                                    <div th:each="tech : ${technologies}" class="flex items-center">
+                                        <input type="checkbox"
+                                               th:id="${'tech-' + tech.id}"
+                                               th:field="*{technologies}"
+                                               th:value="${tech.id + ''}"
+                                        class="mr-2"/>
+                                        <label th:for="${'tech-' + tech.id}" th:text="${tech.name}"></label>
+                                    </div>
                                 </div>
+                                <p th:if="${#fields.hasErrors('technologies')}" th:errors="*{technologies}"
+                                   class="text-red-500 text-sm mt-1"></p>
                             </div>
                         </div>
 
@@ -190,19 +200,43 @@
                 </div>
             </div>
 
-
             <!-- Modal đổi mật khẩu -->
             <div id="passwordModal"
-                 class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center hidden z-50">
+                 th:classappend="${openPasswordModal} ? 'flex' : 'hidden'"
+                 class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
                 <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
                     <h3 class="text-xl font-semibold mb-4">Change Password</h3>
-                    <form th:action="@{/user/change-password}" method="post" class="space-y-4">
-                        <input type="password" name="oldPassword" placeholder="Old Password" required
-                               class="w-full border border-gray-300 px-4 py-2 rounded"/>
-                        <input type="password" name="newPassword" placeholder="New Password" required
-                               class="w-full border border-gray-300 px-4 py-2 rounded"/>
-                        <input type="password" name="confirmPassword" placeholder="Confirm New Password" required
-                               class="w-full border border-gray-300 px-4 py-2 rounded"/>
+                    <form th:action="@{/user/profile/change-password}" th:object="${passwordDTO}" method="post" class="space-y-4">
+                        <!-- Hiển thị lỗi tổng quát -->
+                        <div th:if="${error != null}"
+                             class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
+                            <p th:text="${error}"></p>
+                        </div>
+
+                        <!-- Current Password -->
+                        <div>
+                            <input th:field="*{currentPassword}" type="password" placeholder="Old Password" required
+                                   class="w-full border border-gray-300 px-4 py-2 rounded"/>
+                            <p th:if="${#fields.hasErrors('currentPassword')}" th:errors="*{currentPassword}"
+                               class="text-red-500 text-sm mt-1"></p>
+                        </div>
+
+                        <!-- New Password -->
+                        <div>
+                            <input th:field="*{newPassword}" type="password" placeholder="New Password" required
+                                   class="w-full border border-gray-300 px-4 py-2 rounded"/>
+                            <p th:if="${#fields.hasErrors('newPassword')}" th:errors="*{newPassword}"
+                               class="text-red-500 text-sm mt-1"></p>
+                        </div>
+
+                        <!-- Confirm New Password -->
+                        <div>
+                            <input th:field="*{confirmPassword}" type="password" placeholder="Confirm New Password" required
+                                   class="w-full border border-gray-300 px-4 py-2 rounded"/>
+                            <p th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"
+                               class="text-red-500 text-sm mt-1"></p>
+                        </div>
+
                         <div class="flex justify-end gap-4">
                             <button type="button" onclick="closeModal('passwordModal')"
                                     class="px-4 py-2 border rounded text-gray-700 hover:bg-gray-100">Cancel

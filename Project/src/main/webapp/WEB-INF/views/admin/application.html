@@ -60,7 +60,7 @@
 
                             <td class="px-6 py-4 border underline cursor-pointer"
                                 th:text="${app.recruitmentPosition.name}"
-                                th:attr="data-id=${app.id}, data-link=${app.interviewLink}, data-time=${(app.interviewTime)}"
+                                th:attr="data-id=${app.id}, data-link=${app.interviewLink}, data-time=${app.interviewTime}, data-progress=${app.progress}"
                                 onclick="openInterviewModal(this)">
                             </td>
 
@@ -103,14 +103,14 @@
                             <td class="px-6 py-4 border text-center">
                                 <div class="flex justify-center gap-3">
                                     <!-- Trash Icon (Destroy) -->
-                                    <a th:attr="data-id=${app.id}, data-reason=${app.destroyReason}"
+                                    <a th:attr="data-id=${app.id}, data-reason=${app.destroyReason}, data-progress=${app.progress}"
                                        onclick="showDestroyModal(this)"
                                        class="text-red-600 hover:text-red-800">
                                         <img th:src="@{/image/trash.svg}" alt="Destroy" class="w-6 h-6"/>
                                     </a>
 
                                     <!-- Approve Icon -->
-                                    <a th:attr="data-id=${app.id}, data-result=${app.interviewResult}, data-note=${app.interviewResultNote}"
+                                    <a th:attr="data-id=${app.id}, data-result=${app.interviewResult}, data-note=${app.interviewResultNote}, data-progress=${app.progress}"
                                        onclick="showApproveModal(this)"
                                        class="text-green-600 hover:text-green-800">
                                         <img th:src="@{/image/approve.svg}" alt="Approve" class="w-6 h-6"/>
@@ -174,19 +174,28 @@
         <!-- Interview Modal -->
         <div id="interviewModal"
              th:classappend="${openInterviewModal} ? 'flex' : 'hidden'"
-             class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden">
+             class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
             <div class="bg-white p-6 rounded shadow-lg w-1/3">
                 <h2 class="text-xl font-bold mb-4">Interview</h2>
-                <div th:if="${error}" class="text-red-600 text-sm mb-2" th:text="${error}"></div>
+                <div th:if="${errors}">
+                    <ul class="text-red-600 text-sm mb-2">
+                        <li th:each="error : ${errors}" th:text="${error}"></li>
+                    </ul>
+                </div>
                 <form th:action="@{/admin/application/update-interview}" method="post">
-                    <input type="hidden" name="id" id="applicationId" th:value="${applicationId}" />
+                    <input type="hidden" name="id" id="applicationId" th:value="${applicationId}"/>
                     <div class="mb-4">
                         <label class="block text-sm font-medium">Interview Link *</label>
-                        <input type="text" name="interviewLink" class="border p-2 w-full rounded" required/>
+                        <input type="text" name="interviewLink" class="border p-2 w-full rounded" required
+                               th:value="${applicationDTO?.interviewLink}"
+                               pattern="^(http|https)://.*"
+                               oninvalid="this.setCustomValidity('Link phỏng vấn không hợp lệ')"
+                               oninput="this.setCustomValidity('')"/>
                     </div>
                     <div class="mb-4">
                         <label class="block text-sm font-medium">Interview Time *</label>
-                        <input type="datetime-local" name="interviewTime" class="border p-2 w-full rounded" required/>
+                        <input type="datetime-local" name="interviewTime" class="border p-2 w-full rounded" required
+                               th:value="${applicationDTO?.interviewTime}"/>
                     </div>
                     <div class="flex justify-end">
                         <button type="button" onclick="closeInterviewModal()" class="bg-gray-500 text-white p-2 rounded mr-2">Cancel</button>
@@ -199,16 +208,22 @@
         <!-- Approve Modal -->
         <div id="approveModal"
              th:classappend="${openApproveModal} ? 'flex' : 'hidden'"
-             class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+             class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
             <div class="bg-white p-6 rounded shadow-lg w-full max-w-md">
                 <h2 class="text-lg font-semibold mb-4">Approve Interview</h2>
-                <div th:if="${error}" class="text-red-600 text-sm mb-2" th:text="${error}"></div>
+                <div th:if="${errors}">
+                    <ul class="text-red-600 text-sm mb-2">
+                        <li th:each="error : ${errors}" th:text="${error}"></li>
+                    </ul>
+                </div>
                 <form th:action="@{/admin/application/approve}" method="post">
-                    <input type="hidden" name="applicationId" id="approveAppId"/>
+                    <input type="hidden" name="applicationId" id="approveAppId" th:value="${applicationId}"/>
                     <label>Interview Result *</label>
-                    <input type="text" name="result" required class="w-full border rounded px-3 py-2 mb-4"/>
+                    <input type="text" name="result" required class="w-full border rounded px-3 py-2 mb-4"
+                           th:value="${applicationDTO?.interviewResult}"/>
                     <label>Interview Result Note *</label>
-                    <textarea name="resultNote" rows="4" required class="w-full border rounded px-3 py-2"></textarea>
+                    <textarea name="resultNote" rows="4" required class="w-full border rounded px-3 py-2"
+                              th:text="${applicationDTO?.interviewResultNote}"></textarea>
                     <div class="flex justify-end mt-4">
                         <button type="button" onclick="hideApproveModal()" class="px-4 py-2 border rounded">Cancel</button>
                         <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded">Save</button>
@@ -220,14 +235,19 @@
         <!-- Destroy Modal -->
         <div id="destroyModal"
              th:classappend="${openDestroyModal} ? 'flex' : 'hidden'"
-             class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+             class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
             <div class="bg-white p-6 rounded shadow-lg w-full max-w-md">
                 <h2 class="text-lg font-semibold mb-4">Destroy Interview</h2>
-                <div th:if="${error}" class="text-red-600 text-sm mb-2" th:text="${error}"></div>
+                <div th:if="${errors}">
+                    <ul class="text-red-600 text-sm mb-2">
+                        <li th:each="error : ${errors}" th:text="${error}"></li>
+                    </ul>
+                </div>
                 <form th:action="@{/admin/application/destroy}" method="post">
-                    <input type="hidden" name="applicationId" id="destroyAppId"/>
+                    <input type="hidden" name="applicationId" id="destroyAppId" th:value="${applicationId}"/>
                     <label>Destroy Reason *</label>
-                    <textarea name="destroyReason" required class="w-full border rounded px-3 py-2" rows="4"></textarea>
+                    <textarea name="destroyReason" required class="w-full border rounded px-3 py-2" rows="4"
+                              th:text="${destroyReason}"></textarea>
                     <div class="flex justify-end mt-4">
                         <button type="button" onclick="hideDestroyModal()" class="px-4 py-2 border rounded">Cancel</button>
                         <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded">Save</button>
@@ -240,28 +260,65 @@
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
             function openInterviewModal(element) {
+                const progress = element.dataset.progress;
+                const disabled = ['DONE', 'REJECT', 'CANCEL', 'INTERVIEWING'].includes(progress);
+
                 document.getElementById('applicationId').value = element.dataset.id;
-                document.querySelector('input[name="interviewLink"]').value = element.dataset.link || '';
-                document.querySelector('input[name="interviewTime"]').value = element.dataset.time || '';
+
+                const linkInput = document.querySelector('input[name="interviewLink"]');
+                const timeInput = document.querySelector('input[name="interviewTime"]');
+                const saveButton = document.querySelector('#interviewModal button[type="submit"]');
+
+                linkInput.value = element.dataset.link || '';
+                timeInput.value = element.dataset.time || '';
+
+                linkInput.readOnly = disabled;
+                timeInput.readOnly = disabled;
+                saveButton.disabled = disabled;
+
                 document.getElementById('interviewModal').classList.remove('hidden');
             }
+
             function closeInterviewModal() {
                 document.getElementById('interviewModal').classList.add('hidden');
             }
             function showApproveModal(element) {
+                const progress = element.dataset.progress;
+                const disabled = ['DONE', 'REJECT', 'CANCEL'].includes(progress);
+
                 document.getElementById('approveAppId').value = element.dataset.id;
-                document.querySelector('input[name="result"]').value = element.dataset.result || '';
-                document.querySelector('textarea[name="resultNote"]').value = element.dataset.note || '';
+                const resultInput = document.querySelector('input[name="result"]');
+                const noteTextarea = document.querySelector('textarea[name="resultNote"]');
+                const saveButton = document.querySelector('#approveModal button[type="submit"]');
+
+                resultInput.value = element.dataset.result || '';
+                noteTextarea.value = element.dataset.note || '';
+
+                resultInput.readOnly = disabled;
+                noteTextarea.readOnly = disabled;
+                saveButton.disabled = disabled;
+
                 document.getElementById('approveModal').classList.remove('hidden');
             }
+
             function hideApproveModal() {
                 document.getElementById('approveModal').classList.add('hidden');
             }
             function showDestroyModal(element) {
+                const progress = element.dataset.progress;
+                const disabled = ['DONE', 'REJECT', 'CANCEL'].includes(progress);
+
                 document.getElementById('destroyAppId').value = element.dataset.id;
-                document.querySelector('textarea[name="destroyReason"]').value = element.dataset.reason || '';
+                const reasonTextarea = document.querySelector('textarea[name="destroyReason"]');
+                const saveButton = document.querySelector('#destroyModal button[type="submit"]');
+
+                reasonTextarea.value = element.dataset.reason || '';
+                reasonTextarea.readOnly = disabled;
+                saveButton.disabled = disabled;
+
                 document.getElementById('destroyModal').classList.remove('hidden');
             }
+
             function hideDestroyModal() {
                 document.getElementById('destroyModal').classList.add('hidden');
             }

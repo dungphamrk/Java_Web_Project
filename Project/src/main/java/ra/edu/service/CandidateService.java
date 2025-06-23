@@ -41,7 +41,13 @@ public class CandidateService {
         if (candidate == null) {
             throw new RuntimeException("Không tìm thấy ứng viên");
         }
-        return modelMapper.map(candidate, CandidateDTO.class);
+        CandidateDTO dto = modelMapper.map(candidate, CandidateDTO.class);
+        dto.setTechnologies(
+                candidate.getTechnologyList().stream()
+                        .map(tech -> String.valueOf(tech.getId()))
+                        .collect(Collectors.toList())
+        );
+        return dto;
     }
 
     public void toggleUserStatus(int candidateId) {

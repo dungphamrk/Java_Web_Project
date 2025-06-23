@@ -52,15 +52,16 @@ public class ApplicationController {
                                   @RequestParam(required = false) String keyword,
                                   @RequestParam(required = false) String progress,
                                   RedirectAttributes redirectAttributes) {
-        String error = applicationService.updateInterview(
+        List<String> errors = applicationService.updateInterview(
                 applicationDTO.getId(),
                 applicationDTO.getInterviewLink(),
                 applicationDTO.getInterviewTime()
         );
-        if (error != null) {
-            redirectAttributes.addFlashAttribute("error", error);
-            redirectAttributes.addFlashAttribute("openInterviewModal", true); // mở lại modal
+        if (!errors.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errors", errors);
+            redirectAttributes.addFlashAttribute("openInterviewModal", true);
             redirectAttributes.addFlashAttribute("applicationId", applicationDTO.getId());
+            redirectAttributes.addFlashAttribute("applicationDTO", applicationDTO); // Giữ giá trị form
             return "redirect:/admin/application?page=" + page + "&size=" + size +
                     (keyword != null ? "&keyword=" + keyword : "") +
                     (progress != null ? "&progress=" + progress : "");
@@ -97,14 +98,15 @@ public class ApplicationController {
     public String destroyApplication(@RequestParam int applicationId,
                                      @RequestParam String destroyReason,
                                      RedirectAttributes redirectAttributes) {
-        String error = applicationService.updateProgress(applicationId, Progress.REJECT, destroyReason);
-        if (error != null) {
-            redirectAttributes.addFlashAttribute("error", error);
+        List<String> errors = applicationService.updateProgress(applicationId, Progress.REJECT, destroyReason);
+        if (!errors.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errors", errors);
             redirectAttributes.addFlashAttribute("openDestroyModal", true);
             redirectAttributes.addFlashAttribute("applicationId", applicationId);
-        } else {
-            redirectAttributes.addFlashAttribute("success", "Ứng tuyển đã bị từ chối thành công.");
+            redirectAttributes.addFlashAttribute("destroyReason", destroyReason); // Giữ giá trị lý do
+            return "redirect:/admin/application";
         }
+        redirectAttributes.addFlashAttribute("success", "Ứng tuyển đã bị từ chối thành công.");
         return "redirect:/admin/application";
     }
 
@@ -116,16 +118,18 @@ public class ApplicationController {
         ApplicationDTO dto = applicationService.findById(applicationId);
         dto.setInterviewRequestResult(RequestResult.valueOf(result.toUpperCase()));
         dto.setInterviewResultNote(resultNote);
+        dto.setInterviewResult(result); // Thêm interviewResult
         dto.setProgress(Progress.DONE);
 
-        String error = applicationService.save(dto, ra.edu.validation.OnDone.class);
-        if (error != null) {
-            redirectAttributes.addFlashAttribute("error", error);
+        List<String> errors = applicationService.save(dto, ra.edu.validation.OnDone.class);
+        if (!errors.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errors", errors);
             redirectAttributes.addFlashAttribute("openApproveModal", true);
             redirectAttributes.addFlashAttribute("applicationId", applicationId);
-        } else {
-            redirectAttributes.addFlashAttribute("success", "Kết quả phỏng vấn đã được cập nhật.");
+            redirectAttributes.addFlashAttribute("applicationDTO", dto); // Giữ giá trị form
+            return "redirect:/admin/application";
         }
+        redirectAttributes.addFlashAttribute("success", "Kết quả phỏng vấn đã được cập nhật.");
         return "redirect:/admin/application";
     }
 }
