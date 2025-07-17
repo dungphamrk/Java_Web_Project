@@ -6,11 +6,9 @@ import org.springframework.stereotype.Service;
 import ra.edu.dto.ApplicationDTO;
 import ra.edu.entity.application.Application;
 import ra.edu.entity.application.Progress;
-import ra.edu.entity.recruitmentPosition.RecruitmentPosition;
 import ra.edu.repository.ApplicationRepository;
 import ra.edu.repository.CandidateRepository;
 import ra.edu.repository.RecruitmentPositionRepository;
-import ra.edu.repository.user.UserRepository;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
@@ -64,7 +62,7 @@ public class ApplicationService {
         dto.setProgress(Progress.HANDLING);
         dto.setInterviewRequestDate(LocalDateTime.now());
         // Validate với nhóm OnInterviewing
-        Set<ConstraintViolation<ApplicationDTO>> violations = validator.validate(dto, ra.edu.validation.OnInterviewing.class);
+        Set<ConstraintViolation<ApplicationDTO>> violations = validator.validate(dto, ra.edu.validation.OnHandling.class);
         if (!violations.isEmpty()) {
             return violations.stream()
                     .map(ConstraintViolation::getMessage)
@@ -118,7 +116,6 @@ public class ApplicationService {
             }
             application.setCreateAt(existing.getCreateAt());
             application.setUpdateAt(existing.getUpdateAt());
-            application.setProgress(existing.getProgress());
         }
 
         if (!applicationRepository.save(application)) {

@@ -7,8 +7,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ra.edu.dto.TechnologyDTO;
+import ra.edu.service.AuthService;
 import ra.edu.service.TechnologyService;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -19,18 +21,21 @@ public class TechnologyController {
     @Autowired
     private TechnologyService technologyService;
 
+    @Autowired
+    AuthService authService;
+
     @GetMapping("")
     public String listTechnologies(@RequestParam(defaultValue = "0") int page,
                                    @RequestParam(defaultValue = "5") int size,
                                    @RequestParam(required = false) String keyword,
-                                   Model model) {
+                                   Model model, HttpServletRequest request) {
         List<TechnologyDTO> technologies;
         long totalItems;
 
         if (keyword != null && !keyword.isEmpty()) {
             technologies = technologyService.searchByName(keyword, page, size);
             totalItems = technologyService.countByName(keyword);
-            model.addAttribute("keyword", keyword); // giữ lại từ khóa tìm
+            model.addAttribute("keyword", keyword);
         } else {
             technologies = technologyService.findAllActive(page, size);
             totalItems = technologyService.getTotalActiveItems();
@@ -62,6 +67,15 @@ public class TechnologyController {
             return "redirect:/admin/technology";
         } catch (RuntimeException e) {
             List<TechnologyDTO> technologies = technologyService.findAllActive(0, 5);
+
+// Thêm DTO mới lên đầu danh sách
+            technologies.add(0, technologyDTO);
+
+// Đảm bảo danh sách không vượt quá pageSize
+            if (technologies.size() > 5) {
+                technologies.remove(technologies.size() - 1);
+            }
+
             long totalItems = technologyService.getTotalActiveItems();
             int totalPages = (int) Math.ceil((double) totalItems / 5);
 
@@ -72,8 +86,8 @@ public class TechnologyController {
             model.addAttribute("pageSize", 5);
             model.addAttribute("openAddModal", true);
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/admin/technology?page=0";
 
-            return "redirect:/admin/technology";
         }
     }
 

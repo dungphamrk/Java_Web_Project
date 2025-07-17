@@ -129,61 +129,7 @@
                                 <ol class="space-y-3 text-gray-700">
                                     <li class="flex gap-3">
                                         <span class="font-medium text-gray-900 min-w-[20px]">1.</span>
-                                        <span>Tham gia vào quy trình xây dựng Dashboard, phân tích dữ liệu phục vụ nhu cầu vận hành.</span>
-                                    </li>
-                                    <li class="flex gap-3">
-                                        <span class="font-medium text-gray-900 min-w-[20px]">2.</span>
-                                        <span>Phân tích đưa ra để xuất phục vụ các quyết định kinh doanh dựa trên insight đảm bảo Business Objective và Analytics Objective xuyên suốt quá trình.</span>
-                                    </li>
-                                    <li class="flex gap-3">
-                                        <span class="font-medium text-gray-900 min-w-[20px]">3.</span>
-                                        <span>Tham gia xây dựng nền tảng phân tích dữ liệu BI Self Service, triển khai và thúc đẩy văn hóa dữ liệu trong doanh nghiệp.</span>
-                                    </li>
-                                    <li class="flex gap-3">
-                                        <span class="font-medium text-gray-900 min-w-[20px]">4.</span>
-                                        <span>Tham gia quá trình thiết kế và tổ chức dữ liệu, lớp ngữ nghĩa trong Data Warehouse.</span>
-                                    </li>
-                                    <li class="flex gap-3">
-                                        <span class="font-medium text-gray-900 min-w-[20px]">5.</span>
-                                        <span>Triển khai, vận hành, hỗ trợ các dịch vụ khai thác dữ liệu Customer Data Platform, Tracking Action</span>
-                                    </li>
-                                </ol>
-                            </div>
-
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-900 mb-4">II. Yêu cầu ứng viên</h3>
-                                <ol class="space-y-3 text-gray-700" start="6">
-                                    <li class="flex gap-3">
-                                        <span class="font-medium text-gray-900 min-w-[20px]">6.</span>
-                                        <span>Sinh viên năm cuối hoặc tốt nghiệp chuyên ngành CNTT, toán tin, phân tích dữ liệu, phân tích kinh doanh, khoa học dữ liệu hoặc các ngành kinh tế Số.</span>
-                                    </li>
-                                    <li class="flex gap-3">
-                                        <span class="font-medium text-gray-900 min-w-[20px]">7.</span>
-                                        <span>Có kinh nghiệm trực quan hóa dữ liệu và sử dụng một trong các công cụ như Data Studio, Power BI, Superset, Redash, Metabase,...</span>
-                                    </li>
-                                    <li class="flex gap-3">
-                                        <span class="font-medium text-gray-900 min-w-[20px]">8.</span>
-                                        <span>Có kinh nghiệm làm việc với SQL và tối ưu SQL.</span>
-                                    </li>
-                                    <li class="flex gap-3">
-                                        <span class="font-medium text-gray-900 min-w-[20px]">9.</span>
-                                        <span>Am hiểu về các concept trong xây dựng Data Warehouse như Dimensional Model, BI Self-Service, Semantic Layer,...</span>
-                                    </li>
-                                    <li class="flex gap-3">
-                                        <span class="font-medium text-gray-900 min-w-[20px]">10.</span>
-                                        <span>Có "business sense" tốt, ứng dụng xử lý các đa dạng vấn đề từ các phòng ban (Marketing/Sales/Finance/Manufacturing/...).</span>
-                                    </li>
-                                    <li class="flex gap-3">
-                                        <span class="font-medium text-gray-900 min-w-[20px]">11.</span>
-                                        <span>Có khả năng xử lý lượng thông tin lớn từ dữ liệu và diễn giải tới non-technical stakeholder. Khả năng tự học hỏi và tình tự giác cao.</span>
-                                    </li>
-                                    <li class="flex gap-3">
-                                        <span class="font-medium text-gray-900 min-w-[20px]">12.</span>
-                                        <span>Kỹ năng làm việc nhóm hiệu quả.</span>
-                                    </li>
-                                    <li class="flex gap-3">
-                                        <span class="font-medium text-gray-900 min-w-[20px]">13.</span>
-                                        <span>Kỹ năng giao tiếp tốt, cởi mở, thân thiện</span>
+                                        <span th:text="${position.description}"></span>
                                     </li>
                                 </ol>
                             </div>
@@ -202,7 +148,8 @@
                 <div class="lg:col-span-1">
                     <div th:each="pos : ${positions}" class="space-y-4">
                         <!-- Job Card Link -->
-                        <a th:href="@{'/recruitment/' + ${pos.id}}" class="block">
+                        <a th:if="${pos.id}!=${position.id}"
+                                th:href="@{'/recruitment/' + ${pos.id}}" class="block">
                             <div class="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow mb-6">
                                 <div class="flex items-start gap-3">
                                     <!-- Icon -->
@@ -245,21 +192,20 @@
         <!-- Modal Overlay -->
         <div id="modalOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
             <div class="bg-white rounded-lg w-full max-w-md shadow-lg">
-                <form th:action="@{/apply}" method="post" id="applyForm">
+                <form th:action="@{/apply}" method="post" enctype="multipart/form-data" id="applyForm">
                     <input type="hidden" name="positionId" th:value="${position.id}" />
                     <div class="px-6 py-6">
                         <div class="space-y-2">
-                            <label for="cvUrl" class="block text-sm font-medium text-gray-700">
-                                CV URL <span class="text-red-500">*</span>
+                            <label for="cvFile" class="block text-sm font-medium text-gray-700">
+                                Upload CV <span class="text-red-500">*</span>
                             </label>
                             <input
-                                    type="url"
-                                    id="cvUrl"
-                                    name="cvUrl"
-                                    placeholder="Enter your CV URL"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors duration-200"
-                                    oninput="toggleSaveButton()"
+                                    type="file"
+                                    id="cvFile"
+                                    name="file"
                                     required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors duration-200"
+                                    onchange="toggleSaveButton()"
                             />
                         </div>
                     </div>
@@ -284,6 +230,7 @@
             </div>
         </div>
 
+
         <div th:replace="user/footer :: footer"></div>
     </body>
 
@@ -296,10 +243,11 @@
             document.getElementById(id).classList.add('hidden');
         }
         function toggleSaveButton() {
-            const input = document.getElementById('cvUrl');
+            const input = document.getElementById('cvFile');
             const saveBtn = document.getElementById('saveBtn');
-            saveBtn.disabled = input.value.trim() === '';
+            saveBtn.disabled = !input.files || input.files.length === 0;
         }
+
 
         function toggleDropdown() {
             const menu = document.getElementById('dropdownMenu');

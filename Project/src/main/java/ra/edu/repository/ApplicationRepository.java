@@ -31,7 +31,7 @@ public class ApplicationRepository {
     public List<Application> findAll(int page, int size) {
         try (Session session = sessionFactory.openSession()) {
             Query<Application> query = session.createQuery(
-                    "FROM Application ", Application.class);
+                    "FROM Application order by updateAt desc, candidate.name desc ", Application.class);
             query.setFirstResult(page * size);
             query.setMaxResults(size);
             List<Application> applications = query.getResultList();

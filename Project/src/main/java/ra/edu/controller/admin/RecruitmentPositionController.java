@@ -7,9 +7,11 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ra.edu.dto.RecruitmentPositionDTO;
+import ra.edu.service.AuthService;
 import ra.edu.service.RecruitmentPositionService;
 import ra.edu.service.TechnologyService;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -23,11 +25,14 @@ public class RecruitmentPositionController {
     @Autowired
     private TechnologyService technologyService;
 
+    @Autowired
+    AuthService authService;
+
     @GetMapping("")
     public String listRecruitmentPositions(@RequestParam(defaultValue = "0") int page,
                                            @RequestParam(defaultValue = "5") int size,
                                            @RequestParam(required = false) String keyword,
-                                           Model model) {
+                                           Model model, HttpServletRequest request) {
         prepareModel(model, page, size, keyword);
         model.addAttribute("position", new RecruitmentPositionDTO());
         return "/admin/recruitment-position";
@@ -82,7 +87,7 @@ public class RecruitmentPositionController {
             totalItems = recruitmentPositionService.countByName(keyword);
             model.addAttribute("keyword", keyword);
         } else {
-            positions = recruitmentPositionService.findAllActive(page, size);
+            positions = recruitmentPositionService.findAll(page, size);
             totalItems = recruitmentPositionService.getTotalActiveItems();
         }
 

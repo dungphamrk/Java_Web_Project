@@ -211,26 +211,34 @@
              class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
             <div class="bg-white p-6 rounded shadow-lg w-full max-w-md">
                 <h2 class="text-lg font-semibold mb-4">Approve Interview</h2>
+
                 <div th:if="${errors}">
                     <ul class="text-red-600 text-sm mb-2">
                         <li th:each="error : ${errors}" th:text="${error}"></li>
                     </ul>
                 </div>
+
                 <form th:action="@{/admin/application/approve}" method="post">
                     <input type="hidden" name="applicationId" id="approveAppId" th:value="${applicationId}"/>
+
                     <label>Interview Result *</label>
-                    <input type="text" name="result" required class="w-full border rounded px-3 py-2 mb-4"
-                           th:value="${applicationDTO?.interviewResult}"/>
+                    <select name="result" required class="w-full border rounded px-3 py-2 mb-4" id="resultSelect">
+                        <option value="CONFIRM" th:selected="${applicationDTO?.interviewResult == 'CONFIRM'}">Đạt</option>
+                        <option value="REJECT" th:selected="${applicationDTO?.interviewResult == 'REJECT'}">Trượt</option>
+                    </select>
+
                     <label>Interview Result Note *</label>
                     <textarea name="resultNote" rows="4" required class="w-full border rounded px-3 py-2"
-                              th:text="${applicationDTO?.interviewResultNote}"></textarea>
+                              th:text="${applicationDTO?.interviewResultNote}" id="resultNoteTextarea"></textarea>
+
                     <div class="flex justify-end mt-4">
                         <button type="button" onclick="hideApproveModal()" class="px-4 py-2 border rounded">Cancel</button>
-                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded">Save</button>
+                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded" id="approveSaveBtn">Save</button>
                     </div>
                 </form>
             </div>
         </div>
+
 
         <!-- Destroy Modal -->
         <div id="destroyModal"
@@ -287,19 +295,21 @@
                 const disabled = ['DONE', 'REJECT', 'CANCEL'].includes(progress);
 
                 document.getElementById('approveAppId').value = element.dataset.id;
-                const resultInput = document.querySelector('input[name="result"]');
-                const noteTextarea = document.querySelector('textarea[name="resultNote"]');
-                const saveButton = document.querySelector('#approveModal button[type="submit"]');
 
-                resultInput.value = element.dataset.result || '';
+                const resultSelect = document.getElementById('resultSelect');
+                const noteTextarea = document.getElementById('resultNoteTextarea');
+                const saveButton = document.getElementById('approveSaveBtn');
+
+                resultSelect.value = element.dataset.result || '';
                 noteTextarea.value = element.dataset.note || '';
 
-                resultInput.readOnly = disabled;
+                resultSelect.disabled = disabled;
                 noteTextarea.readOnly = disabled;
                 saveButton.disabled = disabled;
 
                 document.getElementById('approveModal').classList.remove('hidden');
             }
+
 
             function hideApproveModal() {
                 document.getElementById('approveModal').classList.add('hidden');

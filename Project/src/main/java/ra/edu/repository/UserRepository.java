@@ -1,4 +1,4 @@
-package ra.edu.repository.user;
+package ra.edu.repository;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -7,13 +7,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ra.edu.entity.user.User;
 
+import javax.transaction.Transactional;
+
 @Repository
-public class UserRepositoryImp implements UserRepository {
+public class UserRepository {
 
     @Autowired
     private SessionFactory sessionFactory;
 
-    @Override
+    public User findByEmail(String email) {
+        Session session = sessionFactory.getCurrentSession();
+        Query<User> query = session.createQuery("FROM User  WHERE candidate.email = :email", User.class);
+        query.setParameter("email", email);
+        return query.uniqueResult();
+    }
+
+
     public User findByUsernameAndPassword(String username, String password) {
         Session session = sessionFactory.getCurrentSession();
         Query<User> query = session.createQuery(
@@ -23,7 +32,6 @@ public class UserRepositoryImp implements UserRepository {
         return query.uniqueResult();
     }
 
-    @Override
     public User findByUsername(String username) {
         Session session = sessionFactory.getCurrentSession();
         Query<User> query = session.createQuery("FROM User WHERE username = :username", User.class);
@@ -31,20 +39,17 @@ public class UserRepositoryImp implements UserRepository {
         return query.uniqueResult();
     }
 
-    @Override
     public int save(User user) {
         Session session = sessionFactory.getCurrentSession();
         session.save(user);
         return user.getId();
     }
 
-    @Override
     public User getUserById(int id) {
         Session session = sessionFactory.getCurrentSession();
         return session.get(User.class, id);
     }
 
-    @Override
     public int updateStatus(int id, String newStatus) {
         Session session = sessionFactory.getCurrentSession();
         Query query = session.createQuery("UPDATE User u SET u.status = :status WHERE u.id = :id");

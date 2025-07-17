@@ -42,14 +42,11 @@ public class ApplicationDTO {
     @NotNull(message = "Thời gian yêu cầu phỏng vấn không được để trống", groups = {
             OnHandling.class, OnInterviewing.class, OnDone.class
     })
-    @FutureOrPresent(message = "Thời gian yêu cầu phỏng vấn phải từ hiện tại trở đi", groups = {
-            OnHandling.class, OnInterviewing.class, OnDone.class
-    })
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime interviewRequestDate;
 
     @NotNull(message = "Kết quả yêu cầu phỏng vấn không được để trống", groups = {
-            OnHandling.class, OnInterviewing.class, OnDone.class
+             OnInterviewing.class, OnDone.class
     })
     private RequestResult interviewRequestResult;
 

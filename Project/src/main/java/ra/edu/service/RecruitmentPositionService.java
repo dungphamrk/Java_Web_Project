@@ -10,7 +10,6 @@ import ra.edu.entity.technology.Technology;
 import ra.edu.repository.RecruitmentPositionRepository;
 import ra.edu.repository.TechnologyRepository;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,6 +27,7 @@ public class RecruitmentPositionService {
     private ModelMapper modelMapper;
 
     public List<RecruitmentPositionDTO> findAllActive(int page, int size) {
+        updateExpiredPositions();
         List<RecruitmentPosition> positions = recruitmentPositionRepository.findAllActive(page, size);
         return positions.stream()
                 .map(position -> modelMapper.map(position, RecruitmentPositionDTO.class))
@@ -35,6 +35,7 @@ public class RecruitmentPositionService {
     }
 
     public List<RecruitmentPositionDTO> findAll(int page, int size) {
+        updateExpiredPositions();
         List<RecruitmentPosition> positions = recruitmentPositionRepository.findAll(page, size);
         return positions.stream()
                 .map(position -> modelMapper.map(position, RecruitmentPositionDTO.class))
@@ -55,7 +56,7 @@ public class RecruitmentPositionService {
             throw new RuntimeException("Recruitment position not found");
         }
 
-        RecruitmentPositionDTO dto =modelMapper.map(position, RecruitmentPositionDTO.class);
+        RecruitmentPositionDTO dto = modelMapper.map(position, RecruitmentPositionDTO.class);
         dto.setTechnologies(
                 position.getTechnologyList().stream()
                         .map(tech -> String.valueOf(tech.getId()))
@@ -109,7 +110,6 @@ public class RecruitmentPositionService {
         recruitmentPositionRepository.save(position);
     }
 
-
     private void mapTechnologies(RecruitmentPositionDTO dto, RecruitmentPosition entity) {
         if (dto.getTechnologies() != null && !dto.getTechnologies().isEmpty()) {
             List<Integer> techIds = dto.getTechnologies().stream()
@@ -135,5 +135,9 @@ public class RecruitmentPositionService {
 
     public void delete(int id) {
         recruitmentPositionRepository.updateStatus(id, Status.INACTIVE);
+    }
+
+    public void updateExpiredPositions() {
+        recruitmentPositionRepository.updateExpiredPositions();
     }
 }

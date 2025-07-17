@@ -9,7 +9,9 @@ import ra.edu.dto.ApplicationDTO;
 import ra.edu.entity.application.Progress;
 import ra.edu.entity.application.RequestResult;
 import ra.edu.service.ApplicationService;
+import ra.edu.service.AuthService;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -20,12 +22,14 @@ public class ApplicationController {
     @Autowired
     private ApplicationService applicationService;
 
+    @Autowired
+    private AuthService authService;
     @GetMapping("")
     public String listApplications(@RequestParam(defaultValue = "0") int page,
                                    @RequestParam(defaultValue = "5") int size,
                                    @RequestParam(required = false) String keyword,
                                    @RequestParam(required = false) String progress,
-                                   Model model) {
+                                   Model model, HttpServletRequest request) {
         prepareModel(model, page, size, keyword, progress);
         model.addAttribute("application", new ApplicationDTO());
         return "/admin/application";
@@ -118,7 +122,7 @@ public class ApplicationController {
         ApplicationDTO dto = applicationService.findById(applicationId);
         dto.setInterviewRequestResult(RequestResult.valueOf(result.toUpperCase()));
         dto.setInterviewResultNote(resultNote);
-        dto.setInterviewResult(result); // Thêm interviewResult
+        dto.setInterviewResult(result);
         dto.setProgress(Progress.DONE);
 
         List<String> errors = applicationService.save(dto, ra.edu.validation.OnDone.class);

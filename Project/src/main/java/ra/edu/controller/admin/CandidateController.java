@@ -6,9 +6,11 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ra.edu.dto.CandidateDTO;
+import ra.edu.service.AuthService;
 import ra.edu.service.CandidateService;
 import ra.edu.service.TechnologyService;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -21,6 +23,8 @@ public class CandidateController {
     @Autowired
     private TechnologyService technologyService;
 
+    @Autowired
+    private AuthService authService;
     @GetMapping("")
     public String listCandidates(
             @RequestParam(defaultValue = "0") int page,
@@ -30,7 +34,8 @@ public class CandidateController {
             @RequestParam(required = false) String gender,
             @RequestParam(required = false) String age,
             @RequestParam(required = false) String experience,
-            Model model
+            Model model,
+            HttpServletRequest request
     ) {
         List<CandidateDTO> candidates = candidateService.filterCandidates(keyword, technology, gender, age, experience, page, size);
         long totalItems = candidateService.countFilteredCandidates(keyword, technology, gender, age, experience);

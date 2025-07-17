@@ -114,4 +114,16 @@ public class RecruitmentPositionRepository {
             return query.uniqueResult();
         }
     }
+
+    public void updateExpiredPositions() {
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            Query<?> query = session.createQuery(
+                    "UPDATE RecruitmentPosition SET status = :status WHERE expiredDate < CURRENT_TIMESTAMP AND status = :currentStatus");
+            query.setParameter("status", Status.INACTIVE);
+            query.setParameter("currentStatus", Status.ACTIVE);
+            query.executeUpdate();
+            session.getTransaction().commit();
+        }
+    }
 }

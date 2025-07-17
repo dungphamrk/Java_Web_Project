@@ -12,7 +12,7 @@ import ra.edu.entity.technology.Technology;
 import ra.edu.entity.user.User;
 import ra.edu.repository.CandidateRepository;
 import ra.edu.repository.TechnologyRepository;
-import ra.edu.repository.user.UserRepositoryImp;
+import ra.edu.repository.UserRepository;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -27,7 +27,7 @@ import java.util.Set;
 public class AuthService {
 
     @Autowired
-    private UserRepositoryImp userRepositoryImp;
+    private UserRepository userRepository;
 
     @Autowired
     private CandidateRepository candidateRepository;
@@ -54,7 +54,7 @@ public class AuthService {
         candidateViolations.forEach(v -> errors.add(v.getMessage()));
 
         // Check for existing username
-        User existingUser = userRepositoryImp.findByUsername(registrationDTO.getUserDTO().getUsername());
+        User existingUser = userRepository.findByUsername(registrationDTO.getUserDTO().getUsername());
         if (existingUser != null) {
             errors.add("Username already exists");
         }
@@ -92,7 +92,7 @@ public class AuthService {
 
     @Transactional
     public User login(String username, String password, HttpServletResponse response) {
-        User user = userRepositoryImp.findByUsernameAndPassword(username, password);
+        User user = userRepository.findByUsernameAndPassword(username, password);
         if (user != null) {
             // Lưu username và role vào cookie
             Cookie usernameCookie = new Cookie("username", user.getUsername());
@@ -144,11 +144,11 @@ public class AuthService {
 
     @Transactional
     public User getUserById(int id) {
-        return userRepositoryImp.getUserById(id);
+        return userRepository.getUserById(id);
     }
 
     @Transactional
     public int updateUserStatus(int id, String status) {
-        return userRepositoryImp.updateStatus(id, status);
+        return userRepository.updateStatus(id, status);
     }
 }
